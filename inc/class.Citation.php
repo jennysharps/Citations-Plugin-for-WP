@@ -17,9 +17,6 @@ class Citation {
             'Newspaper Article'         => 'newspaper'
         )
     );
-    public static $fieldsIds = array(
-        'citation_type'
-    );
     public static $TemplateRenderer;
         
     function __construct( $file ){

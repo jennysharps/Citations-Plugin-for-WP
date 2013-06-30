@@ -8,7 +8,7 @@
  * @var string $placeholder
  * @var string $default
  * @var string $selected
- * @var array $options (associative, $option_name => array( ['value'], ['attributes'] )) 
+ * @var array(assoc.) $options 
  * @author Jenny Sharps <jsharps85@gmail.com>
  */
 ?>
