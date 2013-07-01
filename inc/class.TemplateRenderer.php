@@ -21,7 +21,7 @@ class TemplateRenderer {
         $placeholder = isset( $placeholder ) ? $placeholder : '';
         $default = isset( $default ) ? $default : '';
         $current = $current ? $current : $default;
-        $size = isset( $options['size'] ) ? $options['size'] : '';
+        $size = isset( $size ) ? $size : '';
         
         echo "<br />LABEL: $label<br />";
         echo "<br />FIELD_ID: $field_id<br />";

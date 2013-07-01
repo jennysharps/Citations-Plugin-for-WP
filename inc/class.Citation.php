@@ -180,17 +180,17 @@ class Citation {
             'fields'        => array( 
                 'last' => array(
                     'type'          => 'text',
-                    'placeholder'   => 'Author Last Name',
+                    'placeholder'   => 'Last Name',
                     'current'       => isset( $author_meta['last'] ) ? $author_meta['last'] : '',
                 ),
                 'first' => array(
                     'type'          => 'text',
-                    'placeholder'   => 'Author First Name',
+                    'placeholder'   => 'First Name',
                     'current'       => isset( $author_meta['first'] ) ? $author_meta['first']  : '',
                 ),
                 'middle' => array(
                     'type'          => 'text',
-                    'placeholder'   => 'Author Middle Initial',
+                    'placeholder'   => 'MI',
                     'current'       => isset( $author_meta['middle'] ) ? $author_meta['middle'] : '',
                     'size'          => 'small'
                 )
@@ -217,8 +217,12 @@ class Citation {
                 return;
             }
 
-            update_post_meta( $postID, self::$citationTypes['field_id'], $_POST[self::$citationTypes['field_id']] );
-            update_post_meta( $postID, 'citation', $_POST['citation'] );
+            if( isset( $_POST[self::$citationTypes['field_id']] ) ) {
+                update_post_meta( $postID, self::$citationTypes['field_id'], $_POST[self::$citationTypes['field_id']] );
+            }
+            if( isset( $_POST['citation'] ) ) {
+                update_post_meta( $postID, 'citation', $_POST['citation'] );
+            }
         }
     }
     
