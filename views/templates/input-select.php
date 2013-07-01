@@ -6,8 +6,7 @@
  * @var string $instructions
  * @var string $field_id
  * @var string $placeholder
- * @var string $default
- * @var string $selected
+ * @var string $current
  * @var array(assoc.) $options 
  * @author Jenny Sharps <jsharps85@gmail.com>
  */
@@ -17,10 +16,10 @@
 
 <select id="<?php echo $field_id; ?>" name="<?php echo $field_id; ?>">
     <?php if( $placeholder ) { ?>
-    <option<?php if( !$selected ) {?> selected="selected"<?php } ?> disabled="disabled" value=""><?php echo $placeholder; ?></option>
+    <option<?php if( !$current ) {?> selected="selected"<?php } ?> disabled="disabled" value=""><?php echo $placeholder; ?></option>
 <?php } ?>
 <?php foreach( $options as $key => $value ) {
-    $select = $selected == $value ? ' selected="selected"' : ''; ?>
+    $select = $current == $value ? ' selected="selected"' : ''; ?>
     <option<?php echo $select; ?> value="<?php echo $value; ?>"><?php echo $key; ?></option>
 <?php } ?>
 </select>

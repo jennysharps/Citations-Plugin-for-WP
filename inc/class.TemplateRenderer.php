@@ -13,21 +13,36 @@ class TemplateRenderer {
     }
     
     public function renderInput( $type, $options ) {
-        // var_dump($options);
         
         $variables = extract( $options );
         
-        /* echo "<br />LABEL: $label<br />";
-        echo "FIELD_ID: $field_id<br />";
+        $label = isset( $label ) ? $label : '';
+        $instructions = isset( $instructions ) ? $instructions : '';
+        $placeholder = isset( $placeholder ) ? $placeholder : '';
+        $default = isset( $default ) ? $default : '';
+        $current = $current ? $current : $default;
+        $size = isset( $options['size'] ) ? $options['size'] : '';
+        
+        echo "<br />LABEL: $label<br />";
+        echo "<br />FIELD_ID: $field_id<br />";
         echo "PLACEHOLDER: $placeholder<br />";
         echo "DEFAULT: $default<br />";
-        echo "SELECTED: $selected<br />";*/
+        echo "CURRENT: $current<br />";
         
         ob_start();
         require( $this->path . '/input-' . $type . ".php");
-        $contents = ob_get_contents(); 
-        ob_end_clean();
-        return $contents;
+        return ob_get_clean();
 
+    }
+    
+    public function renderInputGroup( $options ) {
+        $contents = '';
+        $x = 0;
+        foreach( $options['fields'] as $key => $field ) {
+            $field['field_id'] = "{$options['field_id']}[$key]";
+            $contents .= $this->renderInput( $field['type'], $field );
+            $x++;
+        }
+        return $contents;
     }
 }

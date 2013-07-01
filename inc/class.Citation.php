@@ -100,28 +100,105 @@ class Citation {
     public static function markupMetaBoxes( $post, $box ) {
 
         $meta = get_post_meta( $post->ID );
-
+        $citation_meta = get_post_meta( $post->ID, 'citation' );
         echo wp_nonce_field( -1, self::$postTypeName . '_noncename', true, false ); ?>
 
         <div class="<?php echo self::$postTypeName; ?>-custom-fields">
             
             <?php
             
-            ${self::$citationTypes['field_id'] . '_options'} = array(
+            $type_field_id = self::$citationTypes['field_id'];
+            $selected_type = isset( $meta[$type_field_id][0] ) ? $meta[$type_field_id][0] : '';
+            ${$type_field_id . '_options'} = array(
                 'label'         => 'Type',
-                'field_id'      => self::$citationTypes['field_id'],
+                'field_id'      => $type_field_id,
                 'placeholder'   => 'Select Type',
                 'options'       => self::$citationTypes['options'],
-                'selected'      => $meta[self::$citationTypes['field_id']][0]
+                'current'      => $selected_type
             );
-            echo self::$TemplateRenderer->renderInput( 'select', ${self::$citationTypes['field_id'] . '_options'} );
-            ?>      
+            echo self::$TemplateRenderer->renderInput( 'select', ${$type_field_id . '_options'} );
             
+            /*Render specific citation fields*/
+            if( $selected_type ) {
+                echo self::buildInputGroups( $selected_type, $citation_meta );
+            }
+            ?>        
 
         </div>
 
     <?php }
+    
+    /**
+    * Build citation group based on speific type
+    * @mvc Controller
+    * @param string $citation_type
+    * @param array  $current_meta
+    * @author Jenny Sharps <jsharps85@gmail.com>
+    */
+    public static function buildInputGroups( $citation_type, $citation_meta = NULL ) {        
+
+        switch( $citation_type ) {
+            case 'book':
+                $return = self::renderBookGroup( $citation_meta );
+                break;
+            case 'book_chapter':
+                break;
+            case 'book_electronic':
+                break;
+            case 'book_chapter_electronic':
+                break;
+            case 'conference':
+                break;
+            case 'journal':
+                break;
+            case 'magazine':
+                break;
+            case 'newspaper':
+                break;
+        }
+        return $return;
+    }
+    
+    public static function renderBookGroup( $citation_meta ) {
+
+            $author_count = isset( $citation_meta[0]['author'] ) ? count( $citation_meta[0]['author'] ) : 1;
+            $author_meta = isset( $citation_meta[0]['author'] ) ? $citation_meta[0]['author'] : '';
             
+            $markup = '<label>Author Info</label>';
+        
+            for( $x = 0; $x < $author_count; $x++ ) {
+                $markup .= self::renderAuthorGroup( $x, $author_meta[$x] );
+            }
+            
+            return $markup;
+    }
+    
+    public static function renderAuthorGroup( $item, $author_meta = NULL ) {
+
+        $author_options = array(
+            'field_id'      => "citation[author][$item]",
+            'fields'        => array( 
+                'last' => array(
+                    'type'          => 'text',
+                    'placeholder'   => 'Author Last Name',
+                    'current'       => isset( $author_meta['last'] ) ? $author_meta['last'] : '',
+                ),
+                'first' => array(
+                    'type'          => 'text',
+                    'placeholder'   => 'Author First Name',
+                    'current'       => isset( $author_meta['first'] ) ? $author_meta['first']  : '',
+                ),
+                'middle' => array(
+                    'type'          => 'text',
+                    'placeholder'   => 'Author Middle Initial',
+                    'current'       => isset( $author_meta['middle'] ) ? $author_meta['middle'] : '',
+                    'size'          => 'small'
+                )
+            ),
+        );
+        return '<div class="author_group">' . self::$TemplateRenderer->renderInputGroup( $author_options ) .'</div>';
+    }
+    
     /**
      * Saves values of the the custom post type's extra fields
      * @mvc Controller
@@ -131,15 +208,18 @@ class Citation {
      */
     public static function savePost( $postID, $revision = NULL ) {
 
-        /*if ( ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) ||
-                !wp_verify_nonce( $_POST[self::$postTypeName . '_noncename'] )  ||
-                !current_user_can( 'edit_post', $postId ) ) {
-            return;
-        }*/
+        if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
+		return;
+        
+        if ( isset( $_POST[self::$postTypeName . '_noncename'] ) ) {
+            
+            if( !wp_verify_nonce( $_POST[self::$postTypeName . '_noncename'] )  || !current_user_can( 'edit_post', $postID )) {
+                return;
+            }
 
-
-        update_post_meta( $postID, self::$citationTypes['field_id'], $_POST[self::$citationTypes['field_id']] );
-  
+            update_post_meta( $postID, self::$citationTypes['field_id'], $_POST[self::$citationTypes['field_id']] );
+            update_post_meta( $postID, 'citation', $_POST['citation'] );
+        }
     }
     
 }
