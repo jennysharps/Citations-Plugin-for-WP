@@ -136,7 +136,7 @@ class Citation {
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
     public static function buildInputGroups( $citation_type, $citation_meta = NULL ) {        
-
+        $return = '';
         switch( $citation_type ) {
             case 'book':
                 $return = self::renderBookGroup( $citation_meta );
@@ -162,12 +162,12 @@ class Citation {
     public static function renderBookGroup( $citation_meta ) {
 
             $author_count = isset( $citation_meta[0]['author'] ) ? count( $citation_meta[0]['author'] ) : 1;
-            $author_meta = isset( $citation_meta[0]['author'] ) ? $citation_meta[0]['author'] : '';
             
             $markup = '<label>Author Info</label>';
         
             for( $x = 0; $x < $author_count; $x++ ) {
-                $markup .= self::renderAuthorGroup( $x, $author_meta[$x] );
+                $author_meta_item = isset( $citation_meta[0]['author'][$x] ) ? $citation_meta[0]['author'][$x] : '';
+                $markup .= self::renderAuthorGroup( $x, $author_meta_item );
             }
             
             return $markup;
