@@ -166,7 +166,7 @@ class Citation {
             $markup = '<label>Author Info</label>';
         
             for( $x = 0; $x < $author_count; $x++ ) {
-                $author_meta_item = isset( $citation_meta[0]['author'][$x] ) ? $citation_meta[0]['author'][$x] : '';
+                $author_meta_item = is_array( $citation_meta[0] ) && ( !empty( $citation_meta[0]['author'][$x] ) ) ? $citation_meta[0]['author'][$x] : '';
                 $markup .= self::renderAuthorGroup( $x, $author_meta_item );
             }
             
