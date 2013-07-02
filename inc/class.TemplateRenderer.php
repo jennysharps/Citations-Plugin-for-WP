@@ -23,11 +23,11 @@ class TemplateRenderer {
         $current = $current ? $current : $default;
         $size = isset( $size ) ? $size : '';
         
-        echo "<br />LABEL: $label<br />";
+        /* echo "<br />LABEL: $label<br />";
         echo "<br />FIELD_ID: $field_id<br />";
         echo "PLACEHOLDER: $placeholder<br />";
         echo "DEFAULT: $default<br />";
-        echo "CURRENT: $current<br />";
+        echo "CURRENT: $current<br />"; */
         
         ob_start();
         require( $this->path . '/input-' . $type . ".php");

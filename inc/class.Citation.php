@@ -18,6 +18,7 @@ class Citation {
         )
     );
     public static $TemplateRenderer;
+    public $citationMeta;
         
     function __construct( $file ){
         add_action( 'admin_init', array( __CLASS__, 'createPostType' ) );
@@ -116,12 +117,19 @@ class Citation {
                 'options'       => self::$citationTypes['options'],
                 'current'      => $selected_type
             );
-            echo self::$TemplateRenderer->renderInput( 'select', ${$type_field_id . '_options'} );
+            ?>
+            
+            <div id="<?php echo $type_field_id; ?>_input">
+            <?php echo self::$TemplateRenderer->renderInput( 'select', ${$type_field_id . '_options'} ); ?>
+            </div>
+            
+            <?php
             
             /*Render specific citation fields*/
             if( $selected_type ) {
                 echo self::buildInputGroups( $selected_type, $citation_meta );
             }
+            
             ?>        
 
         </div>
@@ -135,21 +143,27 @@ class Citation {
     * @param array  $current_meta
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
-    public static function buildInputGroups( $citation_type, $citation_meta = NULL ) {        
+    public static function buildInputGroups( $citation_type, $citation_meta = NULL ) {
+
         $return = '';
         switch( $citation_type ) {
             case 'book':
-                $return = self::renderBookGroup( $citation_meta );
+                $return = self::getBookFields( $citation_meta );
                 break;
             case 'book_chapter':
+                $return = self::getBookFields( $citation_meta, FALSE, TRUE );
                 break;
             case 'book_electronic':
+                $return = self::getBookFields( $citation_meta, TRUE );
                 break;
             case 'book_chapter_electronic':
+                $return = self::getBookFields( $citation_meta, TRUE, TRUE );
                 break;
             case 'conference':
+                $return = self::getConferenceFields( $citation_meta, $citation_type );
                 break;
             case 'journal':
+                $return = self::getJournalFields ( $citation_meta, $citation_type );
                 break;
             case 'magazine':
                 break;
@@ -159,21 +173,84 @@ class Citation {
         return $return;
     }
     
-    public static function renderBookGroup( $citation_meta ) {
-
-            $author_count = isset( $citation_meta[0]['author'] ) ? count( $citation_meta[0]['author'] ) : 1;
+    public static function getBookFields( $citation_meta, $electronic = FALSE, $chapter = FALSE ) {
             
-            $markup = '<label>Author Info</label>';
-        
-            for( $x = 0; $x < $author_count; $x++ ) {
-                $author_meta_item = is_array( $citation_meta[0] ) && ( !empty( $citation_meta[0]['author'][$x] ) ) ? $citation_meta[0]['author'][$x] : '';
-                $markup .= self::renderAuthorGroup( $x, $author_meta_item );
+            $markup  = self::getAuthorFieldGroup( $citation_meta );
+            $markup .= self::getPublicationInfoField( $citation_meta, 'year', 'Publication Year' );
+            
+            if( $chapter ) {
+                $markup .= self::getPublicationInfoField( $citation_meta, 'chapter_title', 'Title of Chapter' );
+            }
+            
+            $markup .= self::getPublicationInfoField( $citation_meta, 'title', 'Title of Book' );
+            
+            if( $chapter ) {
+                $markup .= self::getPublicationInfoField( $citation_meta, 'section', 'Chapter or Section #' );
+            }
+            
+            if( !$electronic ){
+                $markup .= self::getPublicationInfoField( $citation_meta, 'location' );
+                $markup .= self::getPublicationInfoField( $citation_meta, 'publisher' );
+            }
+
+            if( $electronic ) {
+                $markup .= self::getPublicationInfoField( $citation_meta, 'url', 'URL' );
             }
             
             return $markup;
+         
     }
     
-    public static function renderAuthorGroup( $item, $author_meta = NULL ) {
+    public static function getConferenceFields( $citation_meta, $field ) {
+            $title_label = $field == 'conference' ? ucfirst( $field ) . ' Paper' : ucfirst( $field ); 
+        
+            $markup  = self::getAuthorFieldGroup( $citation_meta );
+            $markup .= self::getPublicationInfoField( $citation_meta, 'year', 'Publication Year' );
+
+            $markup .= self::getPublicationInfoField( $citation_meta, 'title', 'Title of ' . ucfirst( $field ) );
+
+            $markup .= self::getPublicationInfoField( $citation_meta, 'description' );
+            $markup .= self::getPublicationInfoField( $citation_meta, 'location' );
+            
+            return $markup;
+         
+    }
+    
+    public static function getJournalFields( $citation_meta, $field ) {
+            
+            $title_label = $field == 'conference' ? ucfirst( $field ) . ' Paper' : ucfirst( $field ); 
+        
+            $markup  = self::getAuthorFieldGroup( $citation_meta );
+            $markup .= self::getPublicationInfoField( $citation_meta, 'year', 'Publication Year' );
+            
+            $markup .= self::getPublicationInfoField( $citation_meta, 'title', 'Title of Article' );
+            $markup .= self::getPublicationInfoField( $citation_meta, 'journal_title', 'Title of ' . $title_label );
+
+            $markup .= self::getPublicationInfoField( $citation_meta, 'description' );
+            $markup .= self::getPublicationInfoField( $citation_meta, 'location' );
+            
+            return $markup;
+         
+    }
+    
+    public static function getAuthorFieldGroup( $citation_meta ) {
+        
+            $author_count = isset( $citation_meta[0]['author'] ) ? count( $citation_meta[0]['author'] ) : 1;
+            
+            $author_markup = '<div class="author_groups">';
+            $author_markup .= '<label>Author Info</label>';
+        
+            for( $x = 0; $x < $author_count; $x++ ) {
+                $author_meta_item = is_array( $citation_meta[0] ) && ( !empty( $citation_meta[0]['author'][$x] ) ) ? $citation_meta[0]['author'][$x] : '';
+                $author_markup .= self::renderAuthorFields( $x, $author_meta_item );
+            }
+            
+            $author_markup .= '</div>';
+            return $author_markup;
+            
+    }
+    
+    public static function renderAuthorFields( $item, $author_meta = NULL ) {
 
         $author_options = array(
             'field_id'      => "citation[author][$item]",
@@ -196,7 +273,41 @@ class Citation {
                 )
             ),
         );
-        return '<div class="author_group">' . self::$TemplateRenderer->renderInputGroup( $author_options ) .'</div>';
+        return '<div class="field_wrap author_group">' . self::$TemplateRenderer->renderInputGroup( $author_options ) .'</div>';
+    }
+    
+    public  static function getPublicationInfoField( $citation_meta, $field, $label = NULL ) {
+
+            $label = $label ? $label : ucfirst( $field );
+            $current = isset( $citation_meta[0]["publication_{$field}"] ) ? $citation_meta[0]["publication_{$field}"] : '';
+            $options = array(
+                'label'         => $label,
+                'field_id'      => "citation[publication_{$field}]",
+                'current'       => $current,
+            );
+            $input_type = 'text';
+            
+            switch( $field ) {
+                case 'year':
+                    $options['placeholder'] = 'YYYY';
+                    $options['size'] = 'small';
+                    break;
+                case 'title':
+                    break;
+                case 'location':
+                    $options['placeholder'] = 'ie: Miami, FL';
+                    break;
+                case 'section':
+                    $options['size'] = 'small';
+                    
+            }
+            
+            $markup = '<div class="field_wrap ' . $field . '_field">';
+            $markup .= self::$TemplateRenderer->renderInput( 'text', $options );
+            $markup .= '</div>';
+            
+            return $markup;
+        
     }
     
     /**
