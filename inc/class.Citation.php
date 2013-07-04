@@ -19,13 +19,16 @@ class Citation {
     );
     public static $TemplateRenderer;
     public $citationMeta;
+    public static $File;
         
     function __construct( $file ){
         add_action( 'init', array( __CLASS__, 'createPostType' ) );
         add_action( 'save_post', array( __CLASS__, 'savePost' ) );
         
-        require_once( dirname( $file ) . '/inc/class.TemplateRenderer.php' );
-        self::$TemplateRenderer = new \TemplateRenderer( dirname( $file ) . '/views/templates' );
+        self::$File = $file;
+        
+        require_once( dirname( self::$File ) . '/inc/class.TemplateRenderer.php' );
+        self::$TemplateRenderer = new \TemplateRenderer( dirname( self::$File ) . '/views/templates' );
     }
     
     /**
@@ -55,12 +58,13 @@ class Citation {
             'public' => true,
             'publicly_queryable' => true,
             'show_ui' => true, 
-            'show_in_menu' => true, 
+            'show_in_menu' => true,
+            'menu_icon' => plugin_dir_url( self::$File ) . '/img/reference.png',
             'query_var' => true,
-            'rewrite' => array( 'slug' => 'citation' ),
+            'rewrite' => array( 'slug' => 'citation', 'with_front' => false ),
             'capability_type' => 'post',
             'hierarchical' => false,
-            'menu_position' => 10,
+            'menu_position' => 8,
             'register_meta_box_cb' => array( __CLASS__, 'addMetaBoxes' ),
             'supports' => array( 'title', 'author', 'thumbnail', 'excerpt', 'sticky' )
           );
@@ -167,6 +171,14 @@ class Citation {
         return $return;
     }
     
+    /**
+    * Get fields for book citation type
+    * @mvc Controller
+    * @param string $citation_meta
+    * @param boolean $electronic
+    * @param boolean $chapter
+    * @author Jenny Sharps <jsharps85@gmail.com>
+    */
     public static function getBookFields( $citation_meta, $electronic = FALSE, $chapter = FALSE ) {
             
             $markup  = self::getAuthorFieldGroup( $citation_meta );
@@ -195,13 +207,20 @@ class Citation {
          
     }
     
+    /**
+    * Get fields for conference citation type
+    * @mvc Controller
+    * @param string $citation_meta
+    * @param string  $field
+    * @author Jenny Sharps <jsharps85@gmail.com>
+    */
     public static function getConferenceFields( $citation_meta, $field ) {
             $title_label = $field == 'conference' ? ucfirst( $field ) . ' Paper' : ucfirst( $field ); 
         
             $markup  = self::getAuthorFieldGroup( $citation_meta );
             $markup .= self::getPublicationInfoField( $citation_meta, 'year', 'Publication Year' );
 
-            $markup .= self::getPublicationInfoField( $citation_meta, 'title', 'Title of ' . ucfirst( $field ) );
+            $markup .= self::getPublicationInfoField( $citation_meta, 'title', 'Title of ' . $title_label );
 
             $markup .= self::getPublicationInfoField( $citation_meta, 'description' );
             $markup .= self::getPublicationInfoField( $citation_meta, 'location' );
@@ -210,6 +229,13 @@ class Citation {
          
     }
     
+    /**
+    * Get fields for journal citation type
+    * @mvc Controller
+    * @param string $citation_meta
+    * @param string  $field
+    * @author Jenny Sharps <jsharps85@gmail.com>
+    */
     public static function getJournalFields( $citation_meta, $field ) {
             
             $title_label = $field == 'conference' ? ucfirst( $field ) . ' Paper' : ucfirst( $field ); 
@@ -227,6 +253,12 @@ class Citation {
          
     }
     
+    /**
+    * Get author default author field group
+    * @mvc Controller
+    * @param array  $current_meta
+    * @author Jenny Sharps <jsharps85@gmail.com>
+    */
     public static function getAuthorFieldGroup( $citation_meta ) {
         
             $author_count = isset( $citation_meta[0]['author'] ) ? count( $citation_meta[0]['author'] ) : 1;
@@ -244,6 +276,13 @@ class Citation {
             
     }
     
+    /**
+    * Get author fields markup
+    * @mvc Controller
+    * @param string $citation_type
+    * @param array  $current_meta
+    * @author Jenny Sharps <jsharps85@gmail.com>
+    */
     public static function renderAuthorFields( $item, $author_meta = NULL ) {
 
         $author_options = array(
@@ -270,6 +309,14 @@ class Citation {
         return '<div class="field_wrap author_group">' . self::$TemplateRenderer->renderInputGroup( $author_options ) .'</div>';
     }
     
+    /**
+    * Get publication citation type fields
+    * @mvc Controller
+    * @param string $citation_meta
+    * @param array  $field
+    * @param string label
+    * @author Jenny Sharps <jsharps85@gmail.com>
+    */
     public  static function getPublicationInfoField( $citation_meta, $field, $label = NULL ) {
 
             $label = $label ? $label : ucfirst( $field );
@@ -305,7 +352,7 @@ class Citation {
     }
     
     /**
-     * Saves values of the the custom post type's extra fields
+     * Saves values of the the custom post type's citation fields
      * @mvc Controller
      * @param int $postID
      * @param object $revision
