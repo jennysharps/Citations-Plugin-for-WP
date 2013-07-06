@@ -1,0 +1,44 @@
+input.small {
+        width: 60px;
+}
+
+input.large {
+        width: 500px;
+        max-width: 100%;
+}
+
+.jls_citation-custom-fields label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: .15em;
+}
+
+.jls_citation-custom-fields input {
+        margin-right: .25em;
+}
+
+#citation_type_input label {
+        display: inline-block;
+        margin-right: 1em;
+}
+
+#citation_type_input {
+        padding: 1.5em 0;
+        margin-bottom: 1.5em;
+        border-bottom: 1px dashed #CCC;
+}
+
+.field_wrap {
+        margin-bottom: 1em;
+}
+
+.field_wrap {
+        display: inline-block;
+        padding-right: 3px;
+        max-width: 100%;
+}
+
+.author_groups .field_wrap, .co_author_groups .field_wrap {
+        display: block;
+        padding-right: 0;
+}

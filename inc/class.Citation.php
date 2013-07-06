@@ -18,19 +18,24 @@ class Citation {
         )
     );
     public static $TemplateRenderer;
-    public $citationMeta;
+    public static $CitationMeta;
     public static $File;
-        
+
     function __construct( $file ){
-        add_action( 'init', array( __CLASS__, 'createPostType' ) );
-        add_action( 'save_post', array( __CLASS__, 'savePost' ) );
-        
         self::$File = $file;
-        
+
         require_once( dirname( self::$File ) . '/inc/class.TemplateRenderer.php' );
         self::$TemplateRenderer = new \TemplateRenderer( dirname( self::$File ) . '/views/templates' );
+
+        add_action( 'init', array( __CLASS__, 'createPostType' ) );
+        add_action( 'save_post', array( __CLASS__, 'savePost' ) );
+        add_action( 'admin_init', array( __CLASS__, 'registerAdminScripts' ) );
+        add_action( 'init', array( __CLASS__, 'registerScripts' ) );
+        add_action( 'admin_enqueue_scripts', array( __CLASS__, 'loadAdminScripts' ) );
+        add_action( 'enqueue_scripts', array( __CLASS__, 'loadScripts' ) );
+        add_action( 'wp_ajax_get_citation_fields', array( __CLASS__, 'ajaxSwitchFields' ) );
     }
-    
+
     /**
      * Registers the custom post type
      * @mvc Controller
@@ -48,7 +53,7 @@ class Citation {
             'view_item' => 'View Citation',
             'search_items' => 'Search Citations',
             'not_found' =>  'No citations found',
-            'not_found_in_trash' => 'No citations found in Trash', 
+            'not_found_in_trash' => 'No citations found in Trash',
             'parent_item_colon' => '',
             'menu_name' => 'Citations'
           );
@@ -57,7 +62,7 @@ class Citation {
             'labels' => $labels,
             'public' => true,
             'publicly_queryable' => true,
-            'show_ui' => true, 
+            'show_ui' => true,
             'show_in_menu' => true,
             'menu_icon' => plugin_dir_url( self::$File ) . '/img/reference.png',
             'query_var' => true,
@@ -70,9 +75,9 @@ class Citation {
           );
 
           register_post_type( self::$postTypeName, $args );
-        
+
     }
-    
+
     /**
      * Adds meta boxes for the custom post type
      * @mvc Controller
@@ -88,7 +93,7 @@ class Citation {
             'high'
         );
     }
-    
+
     /**
      * Builds the markup for all meta boxes
      * @mvc Controller
@@ -96,16 +101,86 @@ class Citation {
      * @param object $post
      * @param array $box
      */
+
+    /**
+     * Register admin styles & scripts
+     * @mvc Controller
+     * @author Jenny Sharps <jsharps85@gmail.com>
+     */
+    public static function registerAdminScripts() {
+        wp_register_style( 'citations-admin-css', plugins_url( 'css/admin-style.css', self::$File ) );
+        wp_register_script( 'citations-admin-js', plugins_url( 'js/admin-script.js', self::$File ) );
+    }
+
+    /**
+     * Load admin styles & scripts
+     * @mvc Controller
+     * @author Jenny Sharps <jsharps85@gmail.com>
+     */
+    public static function loadAdminScripts() {
+        global $post_type;
+        if( self::$postTypeName == $post_type ) {
+            wp_enqueue_style( 'citations-admin-css' );
+            wp_enqueue_script( 'citations-admin-js' );
+        }
+    }
+
+    /**
+     * Register frontend styles & scripts
+     * @mvc Controller
+     * @author Jenny Sharps <jsharps85@gmail.com>
+     */
+    public static function registerScripts() {
+        wp_register_style( 'citations-css', plugins_url( 'css/style.css', self::$File ) );
+    }
+
+    /**
+     * Load frontend styles & scripts
+     * @mvc Controller
+     * @author Jenny Sharps <jsharps85@gmail.com>
+     */
+    public static function loadScripts() {
+        wp_enqueue_style( 'citations-css' );
+    }
+
+    /**
+    * Load new inputs based on chosen field type
+    * @mvc Controller
+    * @author Jenny Sharps <jsharps85@gmail.com>
+    */
+    public static function ajaxSwitchFields() {
+        $response = array( );
+        $response['result'] = "";
+        $type = $_REQUEST['chosen_type'];
+        $post_id = $_REQUEST['post_id'];
+
+        if ( !$type  || !$post_id ) {
+            $response['result'] .= !$type ? "field type not specified " : '';
+            $response['result'] .= !$post_id ? "post id not specified" : '';
+        } else {
+            $response['markup'] = self::buildInputGroups( $_REQUEST['chosen_type'], $_REQUEST['post_id'] );
+        }
+
+        echo json_encode( $response );
+        die();
+    }
+
+    /**
+    * Builds the markup displayed on page load for all meta boxes
+    * @mvc Controller
+    * @author Jenny Sharps <jsharps85@gmail.com>
+    * @param object $post
+    * @param array $box
+    */
     public static function markupMetaBoxes( $post, $box ) {
 
         $meta = get_post_meta( $post->ID );
-        $citation_meta = get_post_meta( $post->ID, 'citation' );
         echo wp_nonce_field( -1, self::$postTypeName . '_noncename', true, false ); ?>
 
         <div class="<?php echo self::$postTypeName; ?>-custom-fields">
-            
+
             <?php
-            
+
             $type_field_id = self::$citationTypes['field_id'];
             $selected_type = isset( $meta[$type_field_id][0] ) ? $meta[$type_field_id][0] : '';
             ${$type_field_id . '_options'} = array(
@@ -116,24 +191,24 @@ class Citation {
                 'current'      => $selected_type
             );
             ?>
-            
+
             <div id="<?php echo $type_field_id; ?>_input">
             <?php echo self::$TemplateRenderer->renderInput( 'select', ${$type_field_id . '_options'} ); ?>
             </div>
-            
-            <?php
-            
-            /*Render specific citation fields*/
-            if( $selected_type ) {
-                echo self::buildInputGroups( $selected_type, $citation_meta );
-            }
-            
-            ?>        
+
+            <div id="citation_data">
+                <?php
+                /*Render specific citation fields*/
+                if( $selected_type ) {
+                    echo self::buildInputGroups( $selected_type, $post->ID );
+                }
+                ?>
+            </div>
 
         </div>
 
     <?php }
-    
+
     /**
     * Build citation group based on speific type
     * @mvc Controller
@@ -141,27 +216,30 @@ class Citation {
     * @param array  $current_meta
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
-    public static function buildInputGroups( $citation_type, $citation_meta = NULL ) {
+    public static function buildInputGroups( $citation_type, $post_id ) {
+
+        self::$CitationMeta = get_post_meta( $post_id, 'citation' );
+        self::$CitationMeta = self::$CitationMeta ? self::$CitationMeta : array( array() );
 
         $return = '';
         switch( $citation_type ) {
             case 'book':
-                $return = self::getBookFields( $citation_meta );
+                $return = self::getBookFields();
                 break;
             case 'book_chapter':
-                $return = self::getBookFields( $citation_meta, FALSE, TRUE );
+                $return = self::getBookFields( FALSE, TRUE );
                 break;
             case 'book_electronic':
-                $return = self::getBookFields( $citation_meta, TRUE );
+                $return = self::getBookFields( TRUE );
                 break;
             case 'book_chapter_electronic':
-                $return = self::getBookFields( $citation_meta, TRUE, TRUE );
+                $return = self::getBookFields( TRUE, TRUE );
                 break;
             case 'conference':
-                $return = self::getConferenceFields( $citation_meta, $citation_type );
+                $return = self::getConferenceFields( $citation_type );
                 break;
             case 'journal':
-                $return = self::getJournalFields ( $citation_meta, $citation_type );
+                $return = self::getJournalFields ( $citation_type );
                 break;
             case 'magazine':
                 break;
@@ -170,7 +248,7 @@ class Citation {
         }
         return $return;
     }
-    
+
     /**
     * Get fields for book citation type
     * @mvc Controller
@@ -179,34 +257,35 @@ class Citation {
     * @param boolean $chapter
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
-    public static function getBookFields( $citation_meta, $electronic = FALSE, $chapter = FALSE ) {
-            
-            $markup  = self::getAuthorFieldGroup( $citation_meta );
-            $markup .= self::getTextField( $citation_meta, 'year', 'Publication Year' );
-            
+    public static function getBookFields( $electronic = FALSE, $chapter = FALSE ) {
+
+            $markup  = self::getAuthorFieldGroup();
+            $markup .= self::getAuthorFieldGroup( 'co_author', 'Co-Author Info' );
+            $markup .= self::getTextField( 'year' );
+
             if( $chapter ) {
-                $markup .= self::getTextField( $citation_meta, 'chapter_title', 'Title of Chapter' );
+                $markup .= self::getTextField( 'chapter_title', 'Title of Chapter' );
             }
-            
-            $markup .= self::getTextField( $citation_meta, 'title', 'Title of Book' );
-            
+
+            $markup .= self::getTextField( 'title', 'Title of Book' );
+
             if( $chapter ) {
-                $markup .= self::getTextField( $citation_meta, 'section', 'Chapter or Section #' );
+                $markup .= self::getTextField( 'section', 'Chapter or Section #' );
             }
-            
+
             if( !$electronic ){
-                $markup .= self::getTextField( $citation_meta, 'location' );
-                $markup .= self::getTextField( $citation_meta, 'publisher' );
+                $markup .= self::getTextField( 'location' );
+                $markup .= self::getTextField( 'publisher' );
             }
 
             if( $electronic ) {
-                $markup .= self::getTextField( $citation_meta, 'url', 'URL' );
+                $markup .= self::getTextField( 'url', 'URL' );
             }
-            
+
             return $markup;
-         
+
     }
-    
+
     /**
     * Get fields for conference citation type
     * @mvc Controller
@@ -214,21 +293,21 @@ class Citation {
     * @param string  $field
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
-    public static function getConferenceFields( $citation_meta, $field ) {
-            $title_label = $field == 'conference' ? ucfirst( $field ) . ' Paper' : ucfirst( $field ); 
-        
-            $markup  = self::getAuthorFieldGroup( $citation_meta );
-            $markup .= self::getAuthorFieldGroup( $citation_meta, 'co_author', 'Co-Author Info' );
-            $markup .= self::getTextField( $citation_meta, 'year', 'Year' );
-            $markup .= self::getTextField( $citation_meta, 'month', 'Month' );
-            $markup .= self::getTextField( $citation_meta, 'title', 'Title of ' . $title_label );
-            $markup .= self::getTextField( $citation_meta, 'description' );
-            $markup .= self::getTextField( $citation_meta, 'location' );
-            
+    public static function getConferenceFields( $field ) {
+            $title_label = $field == 'conference' ? ucfirst( $field ) . ' Paper' : ucfirst( $field );
+
+            $markup  = self::getAuthorFieldGroup();
+            $markup .= self::getAuthorFieldGroup( 'co_author', 'Co-Author Info' );
+            $markup .= self::getTextField( 'year', 'Year' );
+            $markup .= self::getTextField( 'month', 'Month' );
+            $markup .= self::getTextField( 'title', 'Title of ' . $title_label );
+            $markup .= self::getTextField( 'description' );
+            $markup .= self::getTextField( 'location' );
+
             return $markup;
-         
+
     }
-    
+
     /**
     * Get fields for journal citation type
     * @mvc Controller
@@ -236,46 +315,47 @@ class Citation {
     * @param string  $field
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
-    public static function getJournalFields( $citation_meta, $field ) {
-            
-            $title_label = $field == 'conference' ? ucfirst( $field ) . ' Paper' : ucfirst( $field ); 
-        
-            $markup  = self::getAuthorFieldGroup( $citation_meta );
-            $markup .= self::getTextField( $citation_meta, 'year', 'Publication Year' );
-            
-            $markup .= self::getTextField( $citation_meta, 'title', 'Title of Article' );
-            $markup .= self::getTextField( $citation_meta, 'journal_title', 'Title of ' . $title_label );
-            $markup .= self::getTextField( $citation_meta, 'volume' );
-            $markup .= self::getTextField( $citation_meta, 'issue' );
-            $markup .= self::getTextField( $citation_meta, 'pages' );
-            
+    public static function getJournalFields( $field ) {
+
+            $title_label = $field == 'conference' ? ucfirst( $field ) . ' Paper' : ucfirst( $field );
+
+            $markup  = self::getAuthorFieldGroup();
+            $markup .= self::getAuthorFieldGroup( 'co_author', 'Co-Author Info' );
+            $markup .= self::getTextField( 'year', 'Year' );
+
+            $markup .= self::getTextField( 'title', 'Title of Article' );
+            $markup .= self::getTextField( 'journal_title', 'Title of ' . $title_label );
+            $markup .= self::getTextField( 'volume' );
+            $markup .= self::getTextField( 'issue' );
+            $markup .= self::getTextField( 'pages' );
+
             return $markup;
-         
+
     }
-    
+
     /**
     * Get author default author field group
     * @mvc Controller
     * @param array  $current_meta
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
-    public static function getAuthorFieldGroup( $citation_meta, $field_id = 'author', $label = 'Author Info' ) {
+    public static function getAuthorFieldGroup( $field_id = 'author', $label = 'Author Info' ) {
 
-            $author_count = isset( $citation_meta[0][$field_id] ) ? count( $citation_meta[0][$field_id] ) : 1;
+            $author_count = isset( self::$CitationMeta[0][$field_id] ) ? count( self::$CitationMeta[0][$field_id] ) : 1;
 
             $author_markup = "<div class='{$field_id}_groups'>";
             $author_markup .= "<label>{$label}</label>";
-        
+
             for( $x = 0; $x < $author_count; $x++ ) {
-                $author_meta_item = is_array( $citation_meta[0] ) && ( !empty( $citation_meta[0][$field_id][$x] ) ) ? $citation_meta[0][$field_id][$x] : '';
+                $author_meta_item = !empty( self::$CitationMeta[0][$field_id][$x] ) ? self::$CitationMeta[0][$field_id][$x] : '';
                 $author_markup .= self::renderAuthorFields( $x, $author_meta_item, $field_id );
             }
-            
+
             $author_markup .= '</div>';
             return $author_markup;
-            
+
     }
-    
+
     /**
     * Get author fields markup
     * @mvc Controller
@@ -287,7 +367,7 @@ class Citation {
 
         $author_options = array(
             'field_id'      => "citation[$field_id][$item]",
-            'fields'        => array( 
+            'fields'        => array(
                 'last' => array(
                     'type'          => 'text',
                     'placeholder'   => 'Last Name',
@@ -308,7 +388,7 @@ class Citation {
         );
         return '<div class="field_wrap author_group">' . self::$TemplateRenderer->renderInputGroup( $author_options ) .'</div>';
     }
-    
+
     /**
     * Get publication citation type fields
     * @mvc Controller
@@ -317,45 +397,48 @@ class Citation {
     * @param string label
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
-    public  static function getTextField( $citation_meta, $field, $label = NULL ) {
+    public  static function getTextField( $field, $label = NULL ) {
 
             $label = $label ? $label : ucfirst( $field );
-            $current = isset( $citation_meta[0]["publication_{$field}"] ) ? $citation_meta[0]["publication_{$field}"] : '';
+            $current = isset( self::$CitationMeta[0]["text_{$field}"] ) ? self::$CitationMeta[0]["text_{$field}"] : '';
             $options = array(
                 'label'         => $label,
-                'field_id'      => "citation[publication_{$field}]",
+                'field_id'      => "citation[text_{$field}]",
                 'current'       => $current,
             );
             $input_type = 'text';
-            
+
             switch( $field ) {
                 case 'year':
                     $options['placeholder'] = 'YYYY';
                     $options['size'] = 'small';
                     break;
                 case 'title':
+                case 'journal_title':
+                case 'chapter_title':
+                case 'url':
+                    $options['size'] = 'large';
                     break;
                 case 'location':
                     $options['placeholder'] = 'ie: Miami, FL';
                     break;
                 case 'section':
-                    $options['size'] = 'small';
                     break;
                 case 'description':
                     $options['placeholder'] = 'ie: Paper presented at the GIS Conference';
                     $options['size'] = 'large';
                     break;
-                    
+
             }
-            
+
             $markup = '<div class="field_wrap ' . $field . '_field">';
             $markup .= self::$TemplateRenderer->renderInput( 'text', $options );
             $markup .= '</div>';
-            
+
             return $markup;
-        
+
     }
-    
+
     /**
      * Saves values of the the custom post type's citation fields
      * @mvc Controller
@@ -367,9 +450,9 @@ class Citation {
 
         if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE )
 		return;
-        
+
         if ( isset( $_POST[self::$postTypeName . '_noncename'] ) ) {
-            
+
             if( !wp_verify_nonce( $_POST[self::$postTypeName . '_noncename'] )  || !current_user_can( 'edit_post', $postID )) {
                 return;
             }
@@ -382,5 +465,5 @@ class Citation {
             }
         }
     }
-    
+
 }
