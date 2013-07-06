@@ -218,6 +218,7 @@ class Citation {
             $title_label = $field == 'conference' ? ucfirst( $field ) . ' Paper' : ucfirst( $field ); 
         
             $markup  = self::getAuthorFieldGroup( $citation_meta );
+            $markup .= self::getAuthorFieldGroup( $citation_meta, 'co_author', 'Co-Author Info' );
             $markup .= self::getTextField( $citation_meta, 'year', 'Year' );
             $markup .= self::getTextField( $citation_meta, 'month', 'Month' );
             $markup .= self::getTextField( $citation_meta, 'title', 'Title of ' . $title_label );
@@ -258,16 +259,16 @@ class Citation {
     * @param array  $current_meta
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
-    public static function getAuthorFieldGroup( $citation_meta ) {
-        
-            $author_count = isset( $citation_meta[0]['author'] ) ? count( $citation_meta[0]['author'] ) : 1;
-            
-            $author_markup = '<div class="author_groups">';
-            $author_markup .= '<label>Author Info</label>';
+    public static function getAuthorFieldGroup( $citation_meta, $field_id = 'author', $label = 'Author Info' ) {
+
+            $author_count = isset( $citation_meta[0][$field_id] ) ? count( $citation_meta[0][$field_id] ) : 1;
+
+            $author_markup = "<div class='{$field_id}_groups'>";
+            $author_markup .= "<label>{$label}</label>";
         
             for( $x = 0; $x < $author_count; $x++ ) {
-                $author_meta_item = is_array( $citation_meta[0] ) && ( !empty( $citation_meta[0]['author'][$x] ) ) ? $citation_meta[0]['author'][$x] : '';
-                $author_markup .= self::renderAuthorFields( $x, $author_meta_item );
+                $author_meta_item = is_array( $citation_meta[0] ) && ( !empty( $citation_meta[0][$field_id][$x] ) ) ? $citation_meta[0][$field_id][$x] : '';
+                $author_markup .= self::renderAuthorFields( $x, $author_meta_item, $field_id );
             }
             
             $author_markup .= '</div>';
@@ -282,10 +283,10 @@ class Citation {
     * @param array  $current_meta
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
-    public static function renderAuthorFields( $item, $author_meta = NULL ) {
+    public static function renderAuthorFields( $item, $author_meta = NULL, $field_id = 'author' ) {
 
         $author_options = array(
-            'field_id'      => "citation[author][$item]",
+            'field_id'      => "citation[$field_id][$item]",
             'fields'        => array( 
                 'last' => array(
                     'type'          => 'text',
@@ -342,6 +343,7 @@ class Citation {
                     break;
                 case 'description':
                     $options['placeholder'] = 'ie: Paper presented at the GIS Conference';
+                    $options['size'] = 'large';
                     break;
                     
             }
