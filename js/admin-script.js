@@ -15,6 +15,9 @@ jQuery(document).ready( function($) {
                 'chosen_type' : selectedType,
                 'post_id' :     postId
             },
+            beforeSend: function(){
+                citationInput.after('<div class="ajax-loader"></div>');
+            },
             success: function(response){
                 var respObj = $.parseJSON(response);
 
@@ -23,6 +26,7 @@ jQuery(document).ready( function($) {
                 } else {
                     citationDataWrapper.html('No fields retrieved.');
                 }
+                $('.ajax-loader').remove();
 
             },
             error: function(response) {

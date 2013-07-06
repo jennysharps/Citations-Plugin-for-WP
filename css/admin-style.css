@@ -42,3 +42,12 @@ input.large {
         display: block;
         padding-right: 0;
 }
+
+.ajax-loader {
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        background: url(../img/pacman-ajax-loader.gif) center no-repeat;
+        display: inline-block;
+        margin-left: 1em;
+}
