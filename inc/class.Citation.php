@@ -7,14 +7,14 @@ class Citation {
     public static $citationTypes = array(
         'field_id'  => 'citation_type',
         'options'   => array(
-            'Book'                      => 'book',
-            'Book Chapter'              => 'book_chapter',
-            'Book (Electronic)'         => 'book_electronic',
-            'Book Chapter (Electronic)' => 'book_chapter_electronic',
-            'Conference Paper'          => 'conference',
-            'Journal Article'           => 'journal',
-            'Magazine Article'          => 'magazine',
-            'Newspaper Article'         => 'newspaper'
+            'Book'                                  => 'book',
+            'Book Chapter'                          => 'book_chapter',
+            'Book (Electronic)'                     => 'book_electronic',
+            'Book Chapter (Electronic)'             => 'book_chapter_electronic',
+            'Unpublished Conference Proceedings'    => 'conference',
+            'Journal Article'                       => 'journal',
+            'Magazine Article'                      => 'magazine',
+            'Newspaper Article'                     => 'newspaper'
         )
     );
     public static $TemplateRenderer;
@@ -218,10 +218,9 @@ class Citation {
             $title_label = $field == 'conference' ? ucfirst( $field ) . ' Paper' : ucfirst( $field ); 
         
             $markup  = self::getAuthorFieldGroup( $citation_meta );
-            $markup .= self::getTextField( $citation_meta, 'year', 'Publication Year' );
-
+            $markup .= self::getTextField( $citation_meta, 'year', 'Year' );
+            $markup .= self::getTextField( $citation_meta, 'month', 'Month' );
             $markup .= self::getTextField( $citation_meta, 'title', 'Title of ' . $title_label );
-
             $markup .= self::getTextField( $citation_meta, 'description' );
             $markup .= self::getTextField( $citation_meta, 'location' );
             
@@ -340,6 +339,10 @@ class Citation {
                     break;
                 case 'section':
                     $options['size'] = 'small';
+                    break;
+                case 'description':
+                    $options['placeholder'] = 'ie: Paper presented at the GIS Conference';
+                    break;
                     
             }
             
