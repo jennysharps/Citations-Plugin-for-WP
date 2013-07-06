@@ -66,7 +66,7 @@ class Citation {
             'hierarchical' => false,
             'menu_position' => 8,
             'register_meta_box_cb' => array( __CLASS__, 'addMetaBoxes' ),
-            'supports' => array( 'title', 'author', 'thumbnail', 'excerpt', 'sticky' )
+            'supports' => array( 'title', 'thumbnail', 'excerpt', 'sticky' )
           );
 
           register_post_type( self::$postTypeName, $args );
@@ -182,25 +182,25 @@ class Citation {
     public static function getBookFields( $citation_meta, $electronic = FALSE, $chapter = FALSE ) {
             
             $markup  = self::getAuthorFieldGroup( $citation_meta );
-            $markup .= self::getPublicationInfoField( $citation_meta, 'year', 'Publication Year' );
+            $markup .= self::getTextField( $citation_meta, 'year', 'Publication Year' );
             
             if( $chapter ) {
-                $markup .= self::getPublicationInfoField( $citation_meta, 'chapter_title', 'Title of Chapter' );
+                $markup .= self::getTextField( $citation_meta, 'chapter_title', 'Title of Chapter' );
             }
             
-            $markup .= self::getPublicationInfoField( $citation_meta, 'title', 'Title of Book' );
+            $markup .= self::getTextField( $citation_meta, 'title', 'Title of Book' );
             
             if( $chapter ) {
-                $markup .= self::getPublicationInfoField( $citation_meta, 'section', 'Chapter or Section #' );
+                $markup .= self::getTextField( $citation_meta, 'section', 'Chapter or Section #' );
             }
             
             if( !$electronic ){
-                $markup .= self::getPublicationInfoField( $citation_meta, 'location' );
-                $markup .= self::getPublicationInfoField( $citation_meta, 'publisher' );
+                $markup .= self::getTextField( $citation_meta, 'location' );
+                $markup .= self::getTextField( $citation_meta, 'publisher' );
             }
 
             if( $electronic ) {
-                $markup .= self::getPublicationInfoField( $citation_meta, 'url', 'URL' );
+                $markup .= self::getTextField( $citation_meta, 'url', 'URL' );
             }
             
             return $markup;
@@ -218,12 +218,12 @@ class Citation {
             $title_label = $field == 'conference' ? ucfirst( $field ) . ' Paper' : ucfirst( $field ); 
         
             $markup  = self::getAuthorFieldGroup( $citation_meta );
-            $markup .= self::getPublicationInfoField( $citation_meta, 'year', 'Publication Year' );
+            $markup .= self::getTextField( $citation_meta, 'year', 'Publication Year' );
 
-            $markup .= self::getPublicationInfoField( $citation_meta, 'title', 'Title of ' . $title_label );
+            $markup .= self::getTextField( $citation_meta, 'title', 'Title of ' . $title_label );
 
-            $markup .= self::getPublicationInfoField( $citation_meta, 'description' );
-            $markup .= self::getPublicationInfoField( $citation_meta, 'location' );
+            $markup .= self::getTextField( $citation_meta, 'description' );
+            $markup .= self::getTextField( $citation_meta, 'location' );
             
             return $markup;
          
@@ -241,13 +241,13 @@ class Citation {
             $title_label = $field == 'conference' ? ucfirst( $field ) . ' Paper' : ucfirst( $field ); 
         
             $markup  = self::getAuthorFieldGroup( $citation_meta );
-            $markup .= self::getPublicationInfoField( $citation_meta, 'year', 'Publication Year' );
+            $markup .= self::getTextField( $citation_meta, 'year', 'Publication Year' );
             
-            $markup .= self::getPublicationInfoField( $citation_meta, 'title', 'Title of Article' );
-            $markup .= self::getPublicationInfoField( $citation_meta, 'journal_title', 'Title of ' . $title_label );
-
-            $markup .= self::getPublicationInfoField( $citation_meta, 'description' );
-            $markup .= self::getPublicationInfoField( $citation_meta, 'location' );
+            $markup .= self::getTextField( $citation_meta, 'title', 'Title of Article' );
+            $markup .= self::getTextField( $citation_meta, 'journal_title', 'Title of ' . $title_label );
+            $markup .= self::getTextField( $citation_meta, 'volume' );
+            $markup .= self::getTextField( $citation_meta, 'issue' );
+            $markup .= self::getTextField( $citation_meta, 'pages' );
             
             return $markup;
          
@@ -317,7 +317,7 @@ class Citation {
     * @param string label
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
-    public  static function getPublicationInfoField( $citation_meta, $field, $label = NULL ) {
+    public  static function getTextField( $citation_meta, $field, $label = NULL ) {
 
             $label = $label ? $label : ucfirst( $field );
             $current = isset( $citation_meta[0]["publication_{$field}"] ) ? $citation_meta[0]["publication_{$field}"] : '';
