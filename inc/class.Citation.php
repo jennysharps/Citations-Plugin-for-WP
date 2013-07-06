@@ -382,7 +382,7 @@ class Citation {
 
             }
 
-            $author_markup .= $repeatable ? "<a class='add_item button'>+ Add Item</a>" : '';
+            $author_markup .= $repeatable ? "<a role='button' tabindex='0' title='Add Item' class='add_item button'>+ Add Item</a>" : '';
 
             $author_markup .= '</div>';
             return $author_markup;
@@ -422,7 +422,7 @@ class Citation {
         $return = "<div class='field_wrap {$field_id}_group' data-itemnumber='{$item}' data-fieldid='{$field_id}'>";
         $return .= self::$TemplateRenderer->renderInputGroup( $author_options );
 
-        $return .= $repeatable && ( $item > 0 ) ? "<a class='remove_item'>-</a>" : '';
+        $return .= $repeatable && ( $item > 0 ) ? "<a role='button' tabindex='0' title='Remove Item' class='remove_item'>-</a>" : '';
 
         $return .= '</div>';
         return $return;
