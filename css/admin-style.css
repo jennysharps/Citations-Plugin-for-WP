@@ -7,6 +7,10 @@ input.large {
         max-width: 100%;
 }
 
+#edit-slug-box {
+        display: none;
+}
+
 .jls_citation-custom-fields label {
         display: block;
         font-weight: bold;
@@ -50,4 +54,58 @@ input.large {
         background: url(../img/pacman-ajax-loader.gif) center no-repeat;
         display: inline-block;
         margin-left: 1em;
+}
+
+.repeatable_fields {
+        margin: 1.5em 0;
+        padding: 1.5em 0 .5em;
+        border-top: 1px dashed #CCC;
+        border-bottom: 1px dashed #CCC;
+}
+
+.add_item.button {
+        margin-bottom: 1em;
+}
+
+
+.remove_item {
+        display: inline-block;
+        text-align: center;
+        padding: 0 1px 1px 0;
+        margin: 0 3px;
+}
+
+.remove_item {
+        width: 16px;
+        height: 16px;
+        font-size: 16px;
+        line-height: 16px;
+        border-radius: 16px;
+        color: #ababab;
+        border: 1px solid #ababab;
+        text-align: center;
+        padding: 0 1px 1px 0;
+        margin: 0 3px;
+        font-weight: bold;
+        background: #FFF;
+}
+
+.remove_item:hover {
+        cursor: pointer;
+        -moz-box-shadow: 1px 1px 2px 1px #ccc;
+        -webkit-box-shadow: 1px 1px 2px 1px #ccc;
+        box-shadow: 1px 1px 2px 1px #ccc;
+}
+
+.remove_item:active {
+        outline: 0;
+        cursor: pointer;
+        -moz-box-shadow: inset -1px -1px 1px 1px #ccc;
+        -webkit-box-shadow: inset -1px -1px 1px 1px #ccc;
+        box-shadow: inset -1px 0 1px 1px #ccc;
+
+}
+
+.remove_item:hover {
+        color: #cd1717;
 }

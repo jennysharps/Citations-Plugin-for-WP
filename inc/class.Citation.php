@@ -34,6 +34,7 @@ class Citation {
         add_action( 'admin_enqueue_scripts', array( __CLASS__, 'loadAdminScripts' ) );
         add_action( 'enqueue_scripts', array( __CLASS__, 'loadScripts' ) );
         add_action( 'wp_ajax_get_citation_fields', array( __CLASS__, 'ajaxSwitchFields' ) );
+        add_action( 'wp_ajax_get_repeater_field', array( __CLASS__, 'ajaxRepeatField' ) );
     }
 
     /**
@@ -158,12 +159,40 @@ class Citation {
             $response['result'] .= !$type ? "field type not specified " : '';
             $response['result'] .= !$post_id ? "post id not specified" : '';
         } else {
-            $response['markup'] = self::buildInputGroups( $_REQUEST['chosen_type'], $_REQUEST['post_id'] );
+            $response['markup'] = self::buildInputGroups( $type, $post_id );
         }
 
         echo json_encode( $response );
         die();
     }
+
+    /**
+    * Load new inputs based on chosen field type
+    * @mvc Controller
+    * @author Jenny Sharps <jsharps85@gmail.com>
+    */
+    public static function ajaxRepeatField() {
+        $response = array( );
+        $response['result'] = "";
+        $type = $_REQUEST['field_id'];
+        $item = $_REQUEST['item_number'];
+        $post_id = $_REQUEST['post_id'];
+
+        if ( !$type  || !$post_id ) {
+            $response['result'] .= !$type ? "field type not specified " : '';
+            $response['result'] .= !$post_id ? "post id not specified" : '';
+        } else {
+            switch($type) {
+                case 'co_author':
+                    $response['markup'] = self::renderAuthorFields( $item, array( array() ), TRUE , $type );
+                    break;
+            }
+        }
+
+        echo json_encode( $response );
+        die();
+    }
+
 
     /**
     * Builds the markup displayed on page load for all meta boxes
@@ -260,7 +289,7 @@ class Citation {
     public static function getBookFields( $electronic = FALSE, $chapter = FALSE ) {
 
             $markup  = self::getAuthorFieldGroup();
-            $markup .= self::getAuthorFieldGroup( 'co_author', 'Co-Author Info' );
+            $markup .= self::getAuthorFieldGroup( 'co_author', 'Co-Author Info', TRUE );
             $markup .= self::getTextField( 'year' );
 
             if( $chapter ) {
@@ -297,7 +326,7 @@ class Citation {
             $title_label = $field == 'conference' ? ucfirst( $field ) . ' Paper' : ucfirst( $field );
 
             $markup  = self::getAuthorFieldGroup();
-            $markup .= self::getAuthorFieldGroup( 'co_author', 'Co-Author Info' );
+            $markup .= self::getAuthorFieldGroup( 'co_author', 'Co-Author Info', TRUE );
             $markup .= self::getTextField( 'year', 'Year' );
             $markup .= self::getTextField( 'month', 'Month' );
             $markup .= self::getTextField( 'title', 'Title of ' . $title_label );
@@ -320,7 +349,7 @@ class Citation {
             $title_label = $field == 'conference' ? ucfirst( $field ) . ' Paper' : ucfirst( $field );
 
             $markup  = self::getAuthorFieldGroup();
-            $markup .= self::getAuthorFieldGroup( 'co_author', 'Co-Author Info' );
+            $markup .= self::getAuthorFieldGroup( 'co_author', 'Co-Author Info', TRUE );
             $markup .= self::getTextField( 'year', 'Year' );
 
             $markup .= self::getTextField( 'title', 'Title of Article' );
@@ -339,17 +368,21 @@ class Citation {
     * @param array  $current_meta
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
-    public static function getAuthorFieldGroup( $field_id = 'author', $label = 'Author Info' ) {
-
+    public static function getAuthorFieldGroup( $field_id = 'author', $label = 'Author Info', $repeatable = FALSE ) {
             $author_count = isset( self::$CitationMeta[0][$field_id] ) ? count( self::$CitationMeta[0][$field_id] ) : 1;
 
-            $author_markup = "<div class='{$field_id}_groups'>";
+            $extra_classes = $repeatable ? ' repeatable_fields' : '';
+
+            $author_markup = "<div class='{$field_id}_groups{$extra_classes}'>";
             $author_markup .= "<label>{$label}</label>";
 
             for( $x = 0; $x < $author_count; $x++ ) {
                 $author_meta_item = !empty( self::$CitationMeta[0][$field_id][$x] ) ? self::$CitationMeta[0][$field_id][$x] : '';
-                $author_markup .= self::renderAuthorFields( $x, $author_meta_item, $field_id );
+                $author_markup .= self::renderAuthorFields( $x, $author_meta_item, $repeatable , $field_id );
+
             }
+
+            $author_markup .= $repeatable ? "<a class='add_item button'>+ Add Item</a>" : '';
 
             $author_markup .= '</div>';
             return $author_markup;
@@ -363,7 +396,7 @@ class Citation {
     * @param array  $current_meta
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
-    public static function renderAuthorFields( $item, $author_meta = NULL, $field_id = 'author' ) {
+    public static function renderAuthorFields( $item, $author_meta = NULL, $repeatable = FALSE, $field_id = 'author' ) {
 
         $author_options = array(
             'field_id'      => "citation[$field_id][$item]",
@@ -386,7 +419,13 @@ class Citation {
                 )
             ),
         );
-        return '<div class="field_wrap author_group">' . self::$TemplateRenderer->renderInputGroup( $author_options ) .'</div>';
+        $return = "<div class='field_wrap {$field_id}_group' data-itemnumber='{$item}' data-fieldid='{$field_id}'>";
+        $return .= self::$TemplateRenderer->renderInputGroup( $author_options );
+
+        $return .= $repeatable && ( $item > 0 ) ? "<a class='remove_item'>-</a>" : '';
+
+        $return .= '</div>';
+        return $return;
     }
 
     /**
@@ -461,6 +500,11 @@ class Citation {
                 update_post_meta( $postID, self::$citationTypes['field_id'], $_POST[self::$citationTypes['field_id']] );
             }
             if( isset( $_POST['citation'] ) ) {
+
+                if( isset( $_POST['citation']['co_author'] ) ) {
+                    $_POST['citation']['co_author'] = array_values( $_POST['citation']['co_author'] );
+                }
+
                 update_post_meta( $postID, 'citation', $_POST['citation'] );
             }
         }
