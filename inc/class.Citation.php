@@ -25,7 +25,7 @@ class Citation {
         self::$File = $file;
 
         require_once( dirname( self::$File ) . '/inc/class.TemplateRenderer.php' );
-        self::$TemplateRenderer = new \TemplateRenderer( dirname( self::$File ) . '/views/templates' );
+        self::$TemplateRenderer = new \TemplateRenderer( dirname( self::$File ) . '/views' );
 
         add_action( 'init', array( __CLASS__, 'createPostType' ) );
         add_action( 'save_post', array( __CLASS__, 'savePost' ) );
@@ -201,16 +201,14 @@ class Citation {
     * @param array $box
     */
     public static function markupMetaBoxes( $post, $box ) {
+        $type_field_id = self::$citationTypes['field_id'];
+        $selected_type = self::getFieldType( $post->ID );
 
-        $meta = get_post_meta( $post->ID );
         echo wp_nonce_field( -1, self::$postTypeName . '_noncename', true, false ); ?>
 
         <div class="<?php echo self::$postTypeName; ?>-custom-fields">
 
             <?php
-
-            $type_field_id = self::$citationTypes['field_id'];
-            $selected_type = isset( $meta[$type_field_id][0] ) ? $meta[$type_field_id][0] : '';
             ${$type_field_id . '_options'} = array(
                 'label'         => 'Type',
                 'field_id'      => $type_field_id,
@@ -246,8 +244,7 @@ class Citation {
     */
     public static function buildInputGroups( $citation_type, $post_id ) {
 
-        self::$CitationMeta = get_post_meta( $post_id, 'citation' );
-        self::$CitationMeta = self::$CitationMeta ? self::$CitationMeta : array( array() );
+        self::setCitationMeta( $post_id );
 
         $return = '';
         switch( $citation_type ) {
@@ -509,8 +506,42 @@ class Citation {
         }
     }
 
-    public static function getCitation( $citation_id ) {
-            return $citation_id;
+
+    /**
+    * Sets SCitationMeta property
+    * @param int $post_id
+    * @author Jenny Sharps <jsharps85@gmail.com>
+    */
+    public static function setCitationMeta( $post_id ) {
+
+            self::$CitationMeta = get_post_meta( $post_id, 'citation' );
+            self::$CitationMeta = self::$CitationMeta ? self::$CitationMeta : array( array() );
+            return;
+
+    }
+
+    /**
+    * Returns selected fields type
+    * @param int $post_id
+    * @author Jenny Sharps <jsharps85@gmail.com>
+    */
+    public static function getFieldType( $post_id ) {
+
+            return get_post_meta( $post_id, self::$citationTypes['field_id'], true );
+
+    }
+
+    /**
+    * Returns formatted citation
+    * @param int $citation_id
+    * @author Jenny Sharps <jsharps85@gmail.com>
+    */
+    public static function getCitation( $post_id ) {
+
+            $field_type =  self::getFieldType( $post_id );
+            self::setCitationMeta( $post_id );
+
+            return self::$TemplateRenderer->renderView( $field_type, self::$CitationMeta[0] );
     }
 
 }
