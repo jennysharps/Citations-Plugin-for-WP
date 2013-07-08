@@ -50,8 +50,8 @@ class Citation {
             'add_new_item' => 'Add New Citation',
             'edit_item' => 'Edit Citation',
             'new_item' => 'New Citation',
-            'all_items' => 'All Citation',
-            'view_item' => 'View Citation',
+            'all_items' => 'All Citations',
+            'view_item' => 'View Citations',
             'search_items' => 'Search Citations',
             'not_found' =>  'No citations found',
             'not_found_in_trash' => 'No citations found in Trash',
@@ -61,13 +61,12 @@ class Citation {
 
           $args = array(
             'labels' => $labels,
-            'public' => true,
-            'publicly_queryable' => true,
+            'public' => false,
+            'publicly_queryable' => false,
             'show_ui' => true,
             'show_in_menu' => true,
             'menu_icon' => plugin_dir_url( self::$File ) . '/img/reference.png',
             'query_var' => true,
-            'rewrite' => array( 'slug' => 'citation', 'with_front' => false ),
             'capability_type' => 'post',
             'hierarchical' => false,
             'menu_position' => 8,
@@ -508,6 +507,10 @@ class Citation {
                 update_post_meta( $postID, 'citation', $_POST['citation'] );
             }
         }
+    }
+
+    public static function getCitation( $citation_id ) {
+            return $citation_id;
     }
 
 }
