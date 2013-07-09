@@ -244,7 +244,7 @@ class Citation {
     */
     public static function buildInputGroups( $citation_type, $post_id ) {
 
-        self::setCitationMeta( $post_id );
+        self::setupCitationMeta( $post_id );
 
         $return = '';
         switch( $citation_type ) {
@@ -365,7 +365,7 @@ class Citation {
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
     public static function getAuthorFieldGroup( $field_id = 'author', $label = 'Author Info', $repeatable = FALSE ) {
-            $author_count = isset( self::$CitationMeta[0][$field_id] ) ? count( self::$CitationMeta[0][$field_id] ) : 1;
+            $author_count = isset( self::$CitationMeta[$field_id] ) ? count( self::$CitationMeta[$field_id] ) : 1;
 
             $extra_classes = $repeatable ? ' repeatable_fields' : '';
 
@@ -373,7 +373,7 @@ class Citation {
             $author_markup .= "<label>{$label}</label>";
 
             for( $x = 0; $x < $author_count; $x++ ) {
-                $author_meta_item = !empty( self::$CitationMeta[0][$field_id][$x] ) ? self::$CitationMeta[0][$field_id][$x] : '';
+                $author_meta_item = !empty( self::$CitationMeta[$field_id][$x] ) ? self::$CitationMeta[$field_id][$x] : '';
                 $author_markup .= self::renderAuthorFields( $x, $author_meta_item, $repeatable , $field_id );
 
             }
@@ -435,7 +435,7 @@ class Citation {
     public  static function getTextField( $field, $label = NULL ) {
 
             $label = $label ? $label : ucfirst( $field );
-            $current = isset( self::$CitationMeta[0]["text_{$field}"] ) ? self::$CitationMeta[0]["text_{$field}"] : '';
+            $current = isset( self::$CitationMeta["text_{$field}"] ) ? self::$CitationMeta["text_{$field}"] : '';
             $options = array(
                 'label'         => $label,
                 'field_id'      => "citation[text_{$field}]",
@@ -506,22 +506,41 @@ class Citation {
         }
     }
 
+    public static function removeEmptyArrayItems( $arr ) {
+        $narr = array ( );
+        while ( list($key, $val) = each( $arr ) ) {
+            if ( is_array( $val ) ) {
+                $val = self::removeEmptyArrayItems( $val );
+                // does the result array contain anything?
+                if ( count( $val ) != 0 ) {
+                    // yes :-)
+                    $narr[$key] = $val;
+                }
+            } else {
+                if ( trim( $val ) != "" ) {
+                    $narr[$key] = $val;
+                }
+            }
+        }
+        unset( $arr );
+        return $narr;
+    }
 
     /**
-    * Sets SCitationMeta property
+    * Sets CitationMeta property
     * @param int $post_id
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
-    public static function setCitationMeta( $post_id ) {
+    public static function setupCitationMeta( $post_id ) {
 
-            self::$CitationMeta = get_post_meta( $post_id, 'citation' );
-            self::$CitationMeta = self::$CitationMeta ? self::$CitationMeta : array( array() );
+            self::$CitationMeta = self::$CitationMeta ? self::$CitationMeta : get_post_meta( $post_id, 'citation', true );
+            self::$CitationMeta = self::$CitationMeta ? self::removeEmptyArrayItems( self::$CitationMeta ) : array();
             return;
 
     }
 
     /**
-    * Returns selected fields type
+    * Returns selected field's type
     * @param int $post_id
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
@@ -539,9 +558,9 @@ class Citation {
     public static function getCitation( $post_id ) {
 
             $field_type =  self::getFieldType( $post_id );
-            self::setCitationMeta( $post_id );
+            self::setupCitationMeta( $post_id );
 
-            return self::$TemplateRenderer->renderView( $field_type, self::$CitationMeta[0] );
+            return self::$TemplateRenderer->renderView( $field_type, self::$CitationMeta );
     }
 
 }
