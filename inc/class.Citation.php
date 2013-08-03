@@ -366,13 +366,13 @@ class Citation {
             $current_ref_type = isset( self::$CitationMeta["select_electronic_ref_type"] ) ? self::$CitationMeta["select_electronic_ref_type"] : '';
 
             $class = $current_ref_type !== 'numeric_doi' ? 'hidden' : '';
-            $markup .= self::getTextField( 'numeric_doi', 'Numeric DOI', '10.1108/03090560710821161', $class );
+            $markup .= self::getTextField( 'numeric_doi', 'Numeric DOI', 'ie: 10.1108/03090560710821161', $class );
 
             $class = $current_ref_type !== 'alphanumeric_doi' ? 'hidden' : '';
-            $markup .= self::getTextField( 'alphanumeric_doi', 'Alpha-numeric DOI', 'http://dx.doi.org/10.1016/j.appdev.2012.05.005', $class );
+            $markup .= self::getTextField( 'alphanumeric_doi', 'Alpha-numeric DOI', 'ie: http://dx.doi.org/10.1016/j.appdev.2012.05.005', $class );
 
             $class = $current_ref_type !== 'url' ? 'hidden' : '';
-            $markup .= self::getTextField( 'url', 'URL', 'http://www.journalhomepage.com/full/url/', $class );
+            $markup .= self::getTextField( 'url', 'URL', 'ie: http://www.journalhomepage.com/full/url/', $class );
 
             $markup .= '</div>';
 
