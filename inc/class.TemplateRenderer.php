@@ -6,19 +6,19 @@ class TemplateRenderer {
         $this->path = $path;
     }
 
-    public function renderView( $view_name, $variables ) {
+    public function renderView( $name, $vars ) {
 
-            var_dump($variables);
-            $variables = extract( $variables );
+            var_dump($vars);
+            extract( $vars );
 
             ob_start();
-            require( $this->path . "/{$view_name}.php" );
+            require( $this->path . "/{$name}.php" );
             return ob_get_clean();
     }
 
     public function renderInput( $type, $options ) {
 
-            $variables = extract( $options );
+            extract( $options );
 
             $label = isset( $label ) ? $label : '';
             $instructions = isset( $instructions ) ? $instructions : '';

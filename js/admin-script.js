@@ -1,12 +1,12 @@
 jQuery(document).ready( function($) {
 
-    var citationInput = $('#citation_type'),
+    var citationSelect = $('#citation_type'),
         citationDataWrapper = $('#citation_data'),
         postId = $('input[name=post_ID]').val(),
         addItemButton = $('a.button.add_item'),
         removeItemButton = $('a.remove_item');
 
-    citationInput.change( function() {
+    citationSelect.change( function() {
         var selectedType = $(this).val();
 
         $.ajax({
@@ -18,7 +18,7 @@ jQuery(document).ready( function($) {
                 'post_id' :     postId
             },
             beforeSend: function(){
-                citationInput.after('<div class="ajax-loader"></div>');
+                citationSelect.after('<div class="ajax-loader"></div>');
             },
             success: function(response){
                 var respObj = $.parseJSON(response);
@@ -56,7 +56,7 @@ jQuery(document).ready( function($) {
                 'post_id':      postId
             },
             beforeSend: function(){
-                citationInput.after('<div class="ajax-loader"></div>');
+                citationSelect.after('<div class="ajax-loader"></div>');
             },
             success: function(response){
                 var respObj = $.parseJSON(response);
@@ -77,6 +77,16 @@ jQuery(document).ready( function($) {
 
     removeItemButton.live( 'click', function(){
         $(this).parent().remove();
+    });
+
+    var electronicRefSelect = $('#citation\\[select_electronic_ref_type\\]'),
+        electronicRefTextFields = $('#electronic_ref_type_wrap .field_wrap');
+
+    electronicRefSelect.change( function() {
+        var selectedType = $(this).val();
+
+        electronicRefTextFields.addClass('hidden').parent().find('.field_wrap.' + selectedType + '_field').removeClass('hidden');
+
     });
 
 });

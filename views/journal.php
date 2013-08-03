@@ -12,8 +12,8 @@
  * @var string $text_pages
  * @author Jenny Sharps <jsharps85@gmail.com>
  *
- *  ex: Jacoby, W. G. (1994). Public attitudes toward government spending. American
- *      Journal of Political Science, 38(2), 336-361.
+ *  ex: Jacoby, W. G. (1994). Public attitudes toward government spending. <em>American
+ *      Journal of Political Science</em>, vol#(issue#), 336-361. doi
  *
  */
 ?>
@@ -24,7 +24,7 @@
 $co_author = array_filter( $co_author );
 
 $author_count = count( $author ) + count( $co_author );
-echo $author_count . '<br>';
+echo '# of Authors: ' . $author_count . '<br><br>';
 
 if( is_array( $author[0] ) ) {
     $author_markup = $author[0]['last'] ? $author[0]['last'] : '';
@@ -52,3 +52,5 @@ if( is_array( $co_author ) ) {
 <?php if( isset( $text_title ) ) { ?><?php echo $text_title; ?><?php } ?>
 <?php if( isset( $text_journal_title ) ) { ?><cite><?php echo $text_journal_title; ?></cite><?php } ?>
 
+
+<?php echo '<br />Journal VIEW<br /><br /><hr>';

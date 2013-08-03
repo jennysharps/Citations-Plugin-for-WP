@@ -14,7 +14,7 @@
 
 <?php if( $label ) { ?><label><?php echo $label; ?></label><?php } ?>
 
-<input type="text" id="<?php echo $field_id; ?>" class="<?php echo $size; ?>" name="<?php echo $field_id; ?>" 
+<input type="text" id="<?php echo $field_id; ?>" class="<?php echo $size; ?>" name="<?php echo $field_id; ?>"
        placeholder="<?php echo $placeholder;?>" value="<?php echo $current; ?>">
 
 <?php if( $instructions ) { ?><p class="description"><?php echo $instructions; ?></p><?php } ?>

@@ -354,6 +354,28 @@ class Citation {
             $markup .= self::getTextField( 'issue' );
             $markup .= self::getTextField( 'pages' );
 
+            $electronic_reference_type_options = array(
+                'none' => '',
+                'Numeric Digital Object Identifier(DOI, old format)' => 'numeric_doi',
+                'Alpha-numeric Digital Object Identifier(DOI, new format)' => 'alphanumeric_doi',
+                'Full URL' => 'url'
+            );
+            $markup .= self::getSelectField( 'electronic_ref_type', $electronic_reference_type_options, 'Electronic Reference Type' );
+            $markup .= '<div id="electronic_ref_type_wrap">';
+
+            $current_ref_type = isset( self::$CitationMeta["select_electronic_ref_type"] ) ? self::$CitationMeta["select_electronic_ref_type"] : '';
+
+            $class = $current_ref_type !== 'numeric_doi' ? 'hidden' : '';
+            $markup .= self::getTextField( 'numeric_doi', 'Numeric DOI', '10.1108/03090560710821161', $class );
+
+            $class = $current_ref_type !== 'alphanumeric_doi' ? 'hidden' : '';
+            $markup .= self::getTextField( 'alphanumeric_doi', 'Alpha-numeric DOI', 'http://dx.doi.org/10.1016/j.appdev.2012.05.005', $class );
+
+            $class = $current_ref_type !== 'url' ? 'hidden' : '';
+            $markup .= self::getTextField( 'url', 'URL', 'http://www.journalhomepage.com/full/url/', $class );
+
+            $markup .= '</div>';
+
             return $markup;
 
     }
@@ -432,7 +454,7 @@ class Citation {
     * @param string label
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
-    public  static function getTextField( $field, $label = NULL ) {
+    public  static function getTextField( $field, $label = NULL, $placeholder = NULL, $class = '' ) {
 
             $label = $label ? $label : ucfirst( $field );
             $current = isset( self::$CitationMeta["text_{$field}"] ) ? self::$CitationMeta["text_{$field}"] : '';
@@ -440,10 +462,65 @@ class Citation {
                 'label'         => $label,
                 'field_id'      => "citation[text_{$field}]",
                 'current'       => $current,
+                'placeholder'   => $placeholder
             );
             $input_type = 'text';
 
             switch( $field ) {
+                case 'year':
+                    $options['placeholder'] = $placeholder ? $placeholder : 'YYYY';
+                    $options['size'] = 'small';
+                    break;
+                case 'title':
+                case 'journal_title':
+                case 'chapter_title':
+                case 'url':
+                case 'numeric_doi':
+                case 'alphanumeric_doi':
+                    $options['size'] = 'large';
+                    break;
+                case 'location':
+                    $options['placeholder'] = $placeholder ? $placeholder : 'ie: Miami, FL';
+                    break;
+                case 'section':
+                    break;
+                case 'description':
+                    $options['placeholder'] = $placeholder ? $placeholder : 'ie: Paper presented at the GIS Conference';
+                    $options['size'] = 'large';
+                    break;
+            }
+
+
+            $markup = '<div class="field_wrap ' . $field . '_field '. $class .'">';
+            $markup .= self::$TemplateRenderer->renderInput( 'text', $options );
+            $markup .= '</div>';
+
+            return $markup;
+
+    }
+
+    /**
+    * Get publication citation type fields
+    * @mvc Controller
+    * @param string $citation_meta
+    * @param array  $field
+    * @param string label
+    * @author Jenny Sharps <jsharps85@gmail.com>
+    */
+    public  static function getSelectField( $field, $slect_options = array(), $label = NULL ) {
+            $label = $label ? $label : ucfirst( $field );
+            $input_type = 'select';
+            $current = isset( self::$CitationMeta["{$input_type}_{$field}"] ) ? self::$CitationMeta["{$input_type}_{$field}"] : '';
+
+            $options = array(
+                'label'         => $label,
+                'field_id'      => "citation[{$input_type}_{$field}]",
+                'placeholder'   => "Select {$label}",
+                'options'       => $slect_options,
+                'current'       => $current,
+            );
+
+/*            switch( $field ) {
                 case 'year':
                     $options['placeholder'] = 'YYYY';
                     $options['size'] = 'small';
@@ -465,9 +542,10 @@ class Citation {
                     break;
 
             }
+ */
 
-            $markup = '<div class="field_wrap ' . $field . '_field">';
-            $markup .= self::$TemplateRenderer->renderInput( 'text', $options );
+            $markup = '<div class="field_wrap select_field ' . $field . '_field">';
+            $markup .= self::$TemplateRenderer->renderInput( 'select', $options );
             $markup .= '</div>';
 
             return $markup;
@@ -496,7 +574,7 @@ class Citation {
                 update_post_meta( $postID, self::$citationTypes['field_id'], $_POST[self::$citationTypes['field_id']] );
             }
             if( isset( $_POST['citation'] ) ) {
-
+                $_POST['citation'] = self::removeEmptyArrayItems( $_POST['citation'] );
                 if( isset( $_POST['citation']['co_author'] ) ) {
                     $_POST['citation']['co_author'] = array_values( $_POST['citation']['co_author'] );
                 }

@@ -7,10 +7,6 @@ input.large {
         max-width: 100%;
 }
 
-#edit-slug-box {
-        display: none;
-}
-
 .jls_citation-custom-fields label {
         display: block;
         font-weight: bold;
@@ -42,7 +38,8 @@ input.large {
         max-width: 100%;
 }
 
-.author_groups .field_wrap, .co_author_groups .field_wrap {
+.author_groups .field_wrap, .co_author_groups .field_wrap,
+.field_wrap.select_field {
         display: block;
         padding-right: 0;
 }
@@ -108,4 +105,8 @@ input.large {
 
 .remove_item:hover {
         color: #cd1717;
+}
+
+#edit-slug-box, .hidden {
+        display: none;
 }
