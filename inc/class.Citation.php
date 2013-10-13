@@ -10,12 +10,10 @@ class Citation {
         'options'   => array(
             'Book'                                  => 'book',
             'Book Chapter'                          => 'book_chapter',
-            'Book (Electronic)'                     => 'book_electronic',
-            'Book Chapter (Electronic)'             => 'book_chapter_electronic',
             'Unpublished Conference Proceedings'    => 'conference',
             'Journal Article'                       => 'journal',
-            'Magazine Article'                      => 'magazine',
-            'Newspaper Article'                     => 'newspaper'
+            /* 'Magazine Article'                      => 'magazine',
+            'Newspaper Article'                     => 'newspaper'*/
         )
     );
     public static $TemplateRenderer;
@@ -264,13 +262,7 @@ class Citation {
                 $return = self::getBookFields();
                 break;
             case 'book_chapter':
-                $return = self::getBookFields( FALSE, TRUE );
-                break;
-            case 'book_electronic':
                 $return = self::getBookFields( TRUE );
-                break;
-            case 'book_chapter_electronic':
-                $return = self::getBookFields( TRUE, TRUE );
                 break;
             case 'conference':
                 $return = self::getConferenceFields( $citation_type );
@@ -296,7 +288,7 @@ class Citation {
     * @param boolean $chapter
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
-    public static function getBookFields( $electronic = FALSE, $chapter = FALSE ) {
+    public static function getBookFields( $chapter = FALSE ) {
 
             $markup  = self::getAuthorFieldGroup();
             $markup .= self::getAuthorFieldGroup( 'co_author', 'Co-Author Info', TRUE );
@@ -309,17 +301,34 @@ class Citation {
             $markup .= self::getTextField( 'title', 'Title of Book' );
 
             if( $chapter ) {
-                $markup .= self::getTextField( 'section', 'Chapter or Section #' );
+                $markup .= self::getTextField( 'pages', 'Page(s)', '104-105' );
             }
 
-            if( !$electronic ){
-                $markup .= self::getTextField( 'location' );
-                $markup .= self::getTextField( 'publisher' );
-            }
+            $markup .= self::getTextField( 'location' );
+            $markup .= self::getTextField( 'publisher' );
 
-            if( $electronic ) {
-                $markup .= self::getTextField( 'url', 'URL' );
-            }
+            $electronic_reference_type_options = array(
+                'none' => '',
+                'Numeric Digital Object Identifier(DOI, old format)' => 'numeric_doi',
+                'Alpha-numeric Digital Object Identifier(DOI, new format)' => 'alphanumeric_doi',
+                'Full URL' => 'url'
+            );
+            $markup .= self::getSelectField( 'electronic_ref_type', $electronic_reference_type_options, 'Electronic Reference Type' );
+            $markup .= '<div id="electronic_ref_type_wrap">';
+
+            $current_ref_type = isset( self::$CitationMeta["select_electronic_ref_type"] ) ? self::$CitationMeta["select_electronic_ref_type"] : '';
+
+            $class = $current_ref_type !== 'numeric_doi' ? 'hidden' : '';
+            $markup .= self::getTextField( 'numeric_doi', 'Numeric DOI', 'ie: 10.1108/03090560710821161', $class );
+
+            $class = $current_ref_type !== 'alphanumeric_doi' ? 'hidden' : '';
+            $markup .= self::getTextField( 'alphanumeric_doi', 'Alpha-numeric DOI', 'ie: http://dx.doi.org/10.1016/j.appdev.2012.05.005', $class );
+
+            $class = $current_ref_type !== 'url' ? 'hidden' : '';
+            $markup .= self::getTextField( 'url', 'URL', 'ie: http://www.journalhomepage.com/full/url/', $class );
+
+            $markup .= '</div>';
+
 
             return $markup;
 
@@ -342,7 +351,7 @@ class Citation {
             $markup .= self::getTextField( 'month', 'Month' );
             $markup .= self::getTextField( 'title', 'Title of ' . $title_label );
             $markup .= self::getTextField( 'description' );
-            $markup .= self::getTextField( 'location' );
+            $markup .= self::getTextField( 'extended_location', 'Location' );
 
             return $markup;
 
@@ -367,7 +376,7 @@ class Citation {
             $markup .= self::getTextField( 'journal_title', 'Title of ' . $title_label );
             $markup .= self::getTextField( 'volume' );
             $markup .= self::getTextField( 'issue' );
-            $markup .= self::getTextField( 'pages' );
+            $markup .= self::getTextField( 'pages', 'Page(s)', '104-105' );
 
             $electronic_reference_type_options = array(
                 'none' => '',
@@ -501,6 +510,9 @@ class Citation {
                 case 'location':
                     $options['placeholder'] = $placeholder ? $placeholder : 'ie: Miami, FL';
                     break;
+                case 'extended_location' :
+                    $options['placeholder'] = $placeholder ? $placeholder : 'Purdue University. Union Club Hotel, West Lafayette, IN';
+                    $options['size'] = 'large';
                 case 'section':
                     break;
                 case 'description':

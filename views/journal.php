@@ -23,16 +23,15 @@
  */
 ?>
 
-<br><br>remove brs in <?php echo basename( __FILE__, '.php' ); ?>.php view<br><br>
-
 <?php
 $co_author = array_filter( $co_author );
 
 if( is_array( $author[0] ) ) {
-    $author_markup = $author[0]['last'] ? $author[0]['last'] : '';
-    $author_markup .= $author[0]['last'] && ( $author[0]['first'] || $author_item['middle'] ) ? ',' : '';
-    $author_markup .= $author[0]['first'] ? ' ' . ucfirst( $author[0]['first'][0] ) . '.' : '';
-    $author_markup .= $author[0]['middle'] ? ' ' . ucfirst(  $author[0]['middle'][0] ) . '.' : '';
+    $author_markup = isset( $author[0]['last'] ) ? $author[0]['last'] : '';
+    $author_markup .= isset( $author[0]['last'] ) && ( isset( $author[0]['first'] ) || isset( $author_item['middle'] ) ) ? ',' : '';
+    $author_markup .= isset( $author[0]['first'] ) ? ' ' . ucfirst( $author[0]['first'][0] ) . '.' : '';
+    $author_markup .= isset( $author[0]['middle'] ) ? ' ' . ucfirst(  $author[0]['middle'][0] ) . '.' : '';
+    $author_markup .= isset( $author[0]['last'] ) && ( !isset( $author[0]['first'] ) && !isset( $author[0]['middle'] ) ) && count( $co_author ) == 0 ? ',' : '';
     $author_markup .= count( $co_author ) > 0 ? ', ' : ' ';
 
     echo $author_markup;
@@ -46,6 +45,7 @@ if( is_array( $co_author ) ) {
         $co_author_markup .= isset( $author_item['last'] ) && ( isset( $author_item['first'] ) || isset( $author_item['middle'] ) ) ? ',' : '';
         $co_author_markup .= isset( $author_item['first'] ) ? ' ' . $author_item['first'][0] . '.' : '';
         $co_author_markup .= isset( $author_item['middle'] ) ? ' ' . $author_item['middle'][0] . '.' : '';
+        $co_author_markup .= isset( $author_item['last'] ) && ( !isset( $author_item['first'] ) && !isset( $author_item['middle'] ) ) && count( $co_author ) == $key + 1 ? ',' : '';
         $co_author_markup .= $co_author_markup && count( $co_author ) != $key + 1 ? ',' : '';
 
         echo $co_author_markup;
@@ -76,6 +76,3 @@ if( isset( $select_electronic_ref_type ) ) {
 
     echo $electronic_ref_markup;
 }
-?>
-
-<br><br><hr><br><br>

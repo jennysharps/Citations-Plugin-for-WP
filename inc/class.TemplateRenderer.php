@@ -9,8 +9,7 @@ class TemplateRenderer {
     }
 
     public function renderView( $name, $vars ) {
-
-            var_dump($vars);
+        
             extract( $vars );
 
             ob_start();
