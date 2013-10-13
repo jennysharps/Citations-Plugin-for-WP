@@ -34,7 +34,7 @@ if( is_array( $author[0] ) ) {
 <?php
 if( is_array( $co_author ) ) {
     foreach( $co_author as $key => $author_item ) {
-        $co_author_markup =  count( $co_author ) + 1 != $key ? ' &' : '';
+        $co_author_markup =  count( $co_author ) == $key + 1 ? ' and' : '';
         $co_author_markup .= isset( $author_item['last'] ) ? ' ' . $author_item['last'] : '';
         $co_author_markup .= isset( $author_item['last'] ) && ( isset( $author_item['first'] ) || isset( $author_item['middle'] ) ) ? ',' : '';
         $co_author_markup .= isset( $author_item['first'] ) ? ' ' . $author_item['first'][0] . '.' : '';
