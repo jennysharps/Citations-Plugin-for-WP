@@ -55,11 +55,11 @@ if( is_array( $co_author ) ) {
 <?php if( isset( $text_year ) ) { ?> (<?php echo $text_year; ?>).<?php } ?>
 <?php if( isset( $text_title ) ) { ?> <?php echo $text_title; ?>.<?php } ?>
 <?php if( isset( $text_journal_title ) ) { ?> <cite><?php echo $text_journal_title; ?></cite><?php } ?>
-<?php if( isset( $text_journal_title ) && ( isset( $text_journal_volume ) || isset( $text_journal_issue ) || isset( $text_journal_pages ) ) ) { ?>,<?php } else {  ?>.<?php }?>
-<?php if( isset( $text_journal_volume ) ) {?> <?php echo $text_journal_volume; } ?>
-<?php if( isset( $text_journal_issue ) ) { ?> (<?php echo $text_journal_issue; ?> )<?php } ?>
-<?php if( isset( $text_journal_volume ) || isset( $text_journal_issue ) ) { ?>, <?php } ?>
-<?php if( isset( $text_journal_pages ) ) { ?> pp. <?php echo $text_journal_pages; ?>.<?php } ?>
+<?php if( isset( $text_journal_title ) && ( isset( $text_volume ) || isset( $text_issue ) || isset( $text_pages ) ) ) { ?>,<?php } else {  ?>.<?php }?>
+<?php if( isset( $text_volume ) ) {?> <?php echo $text_volume; } ?>
+<?php if( isset( $text_issue ) ) { ?> (<?php echo $text_issue; ?> )<?php } ?>
+<?php if( isset( $text_volume ) || isset( $text_issue ) ) { ?>, <?php } ?>
+<?php if( isset( $text_pages ) ) { ?> pp. <?php echo $text_pages; ?>.<?php } ?>
 
 <?php
 if( isset( $select_electronic_ref_type ) ) {
