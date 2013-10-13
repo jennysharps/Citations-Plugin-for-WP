@@ -17,7 +17,7 @@
  * @author Jenny Sharps <jsharps85@gmail.com>
  *
  *  ex: Jacoby, W. G. (1994). Public attitudes toward government spending. <em>American
- *      Journal of Political Science</em>, vol#(issue#), 336-361. doi:10.1108/03090560710821161 OR
+ *      Journal of Political Science</em>, vol#(issue#), pp. 336-361. doi:10.1108/03090560710821161 OR
  *      http://dx.doi.org/10.1016/j.appdev.2012.05.005 OR
  *      Retrieved from http://www.journalhomepage.com/full/url/
  */
@@ -54,7 +54,12 @@ if( is_array( $co_author ) ) {
 
 <?php if( isset( $text_year ) ) { ?> (<?php echo $text_year; ?>).<?php } ?>
 <?php if( isset( $text_title ) ) { ?> <?php echo $text_title; ?>.<?php } ?>
-<?php if( isset( $text_journal_title ) ) { ?> <cite><?php echo $text_journal_title; ?></cite>.<?php } ?>
+<?php if( isset( $text_journal_title ) ) { ?> <cite><?php echo $text_journal_title; ?></cite><?php } ?>
+<?php if( isset( $text_journal_title ) && ( isset( $text_journal_volume ) || isset( $text_journal_issue ) || isset( $text_journal_pages ) ) ) { ?>,<?php } else {  ?>.<?php }?>
+<?php if( isset( $text_journal_volume ) ) {?> <?php echo $text_journal_volume; } ?>
+<?php if( isset( $text_journal_issue ) ) { ?> (<?php echo $text_journal_issue; ?> )<?php } ?>
+<?php if( isset( $text_journal_volume ) || isset( $text_journal_issue ) ) { ?>, <?php } ?>
+<?php if( isset( $text_journal_pages ) ) { ?> pp. <?php echo $text_journal_pages; ?>.<?php } ?>
 
 <?php
 if( isset( $select_electronic_ref_type ) ) {
