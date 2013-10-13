@@ -3,6 +3,7 @@
 namespace JLS\Citations;
 
 class Citation {
+
     public static $postTypeName = 'jls_citation';
     public static $citationTypes = array(
         'field_id'  => 'citation_type',
@@ -21,7 +22,8 @@ class Citation {
     public static $CitationMeta;
     public static $File;
 
-    function __construct( $file ){
+    function __construct( $file ) {
+
         self::$File = $file;
 
         require_once( dirname( self::$File ) . '/inc/class.TemplateRenderer.php' );
@@ -35,6 +37,7 @@ class Citation {
         add_action( 'enqueue_scripts', array( __CLASS__, 'loadScripts' ) );
         add_action( 'wp_ajax_get_citation_fields', array( __CLASS__, 'ajaxSwitchFields' ) );
         add_action( 'wp_ajax_get_repeater_field', array( __CLASS__, 'ajaxRepeatField' ) );
+
     }
 
     /**
@@ -43,6 +46,7 @@ class Citation {
      * @author Jenny Sharps <jsharps85@gmail.com>
      */
     public static function createPostType() {
+
         $labels = array(
             'name' => 'Citations',
             'singular_name' => 'Citation',
@@ -84,6 +88,7 @@ class Citation {
      * @author Jenny Sharps <jsharps85@gmail.com>
      */
     public static function addMetaBoxes() {
+
         add_meta_box(
             self::$postTypeName . '-details',
             'Citation Details',
@@ -92,15 +97,8 @@ class Citation {
             'normal',
             'high'
         );
-    }
 
-    /**
-     * Builds the markup for all meta boxes
-     * @mvc Controller
-     * @author Jenny Sharps <jsharps85@gmail.com>
-     * @param object $post
-     * @param array $box
-     */
+    }
 
     /**
      * Register admin styles & scripts
@@ -108,8 +106,10 @@ class Citation {
      * @author Jenny Sharps <jsharps85@gmail.com>
      */
     public static function registerAdminScripts() {
+
         wp_register_style( 'citations-admin-css', plugins_url( 'css/admin-style.css', self::$File ) );
         wp_register_script( 'citations-admin-js', plugins_url( 'js/admin-script.js', self::$File ) );
+
     }
 
     /**
@@ -118,11 +118,15 @@ class Citation {
      * @author Jenny Sharps <jsharps85@gmail.com>
      */
     public static function loadAdminScripts() {
+
         global $post_type;
         if( self::$postTypeName == $post_type ) {
+
             wp_enqueue_style( 'citations-admin-css' );
             wp_enqueue_script( 'citations-admin-js' );
+
         }
+
     }
 
     /**
@@ -131,7 +135,9 @@ class Citation {
      * @author Jenny Sharps <jsharps85@gmail.com>
      */
     public static function registerScripts() {
+
         wp_register_style( 'citations-css', plugins_url( 'css/style.css', self::$File ) );
+
     }
 
     /**
@@ -140,7 +146,9 @@ class Citation {
      * @author Jenny Sharps <jsharps85@gmail.com>
      */
     public static function loadScripts() {
+
         wp_enqueue_style( 'citations-css' );
+
     }
 
     /**
@@ -149,6 +157,7 @@ class Citation {
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
     public static function ajaxSwitchFields() {
+
         $response = array( );
         $response['result'] = "";
         $type = $_REQUEST['chosen_type'];
@@ -163,6 +172,7 @@ class Citation {
 
         echo json_encode( $response );
         die();
+
     }
 
     /**
@@ -171,6 +181,7 @@ class Citation {
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
     public static function ajaxRepeatField() {
+
         $response = array( );
         $response['result'] = "";
         $type = $_REQUEST['field_id'];
@@ -190,8 +201,8 @@ class Citation {
 
         echo json_encode( $response );
         die();
-    }
 
+    }
 
     /**
     * Builds the markup displayed on page load for all meta boxes
@@ -201,6 +212,7 @@ class Citation {
     * @param array $box
     */
     public static function markupMetaBoxes( $post, $box ) {
+
         $type_field_id = self::$citationTypes['field_id'];
         $selected_type = self::getFieldType( $post->ID );
 
@@ -236,7 +248,7 @@ class Citation {
     <?php }
 
     /**
-    * Build citation group based on speific type
+    * Build citation group based on specific type
     * @mvc Controller
     * @param string $citation_type
     * @param array  $current_meta
@@ -271,7 +283,9 @@ class Citation {
             case 'newspaper':
                 break;
         }
+
         return $return;
+
     }
 
     /**
@@ -319,6 +333,7 @@ class Citation {
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
     public static function getConferenceFields( $field ) {
+
             $title_label = $field == 'conference' ? ucfirst( $field ) . ' Paper' : ucfirst( $field );
 
             $markup  = self::getAuthorFieldGroup();
@@ -387,7 +402,8 @@ class Citation {
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
     public static function getAuthorFieldGroup( $field_id = 'author', $label = 'Author Info', $repeatable = FALSE ) {
-            $author_count = isset( self::$CitationMeta[$field_id] ) ? count( self::$CitationMeta[$field_id] ) : 1;
+
+        $author_count = isset( self::$CitationMeta[$field_id] ) ? count( self::$CitationMeta[$field_id] ) : 1;
 
             $extra_classes = $repeatable ? ' repeatable_fields' : '';
 
@@ -403,6 +419,7 @@ class Citation {
             $author_markup .= $repeatable ? "<a role='button' tabindex='0' title='Add Item' class='add_item button'>+ Add Item</a>" : '';
 
             $author_markup .= '</div>';
+
             return $author_markup;
 
     }
@@ -443,7 +460,9 @@ class Citation {
         $return .= $repeatable && ( $item > 0 ) ? "<a role='button' tabindex='0' title='Remove Item' class='remove_item'>-</a>" : '';
 
         $return .= '</div>';
+
         return $return;
+
     }
 
     /**
@@ -508,6 +527,7 @@ class Citation {
     * @author Jenny Sharps <jsharps85@gmail.com>
     */
     public  static function getSelectField( $field, $slect_options = array(), $label = NULL ) {
+
             $label = $label ? $label : ucfirst( $field );
             $input_type = 'select';
             $current = isset( self::$CitationMeta["{$input_type}_{$field}"] ) ? self::$CitationMeta["{$input_type}_{$field}"] : '';
@@ -520,7 +540,7 @@ class Citation {
                 'current'       => $current,
             );
 
-/*            switch( $field ) {
+/*          switch( $field ) {
                 case 'year':
                     $options['placeholder'] = 'YYYY';
                     $options['size'] = 'small';
@@ -540,7 +560,6 @@ class Citation {
                     $options['placeholder'] = 'ie: Paper presented at the GIS Conference';
                     $options['size'] = 'large';
                     break;
-
             }
  */
 
@@ -582,16 +601,16 @@ class Citation {
                 update_post_meta( $postID, 'citation', $_POST['citation'] );
             }
         }
+
     }
 
     public static function removeEmptyArrayItems( $arr ) {
-        $narr = array ( );
+
+        $narr = array ();
         while ( list($key, $val) = each( $arr ) ) {
             if ( is_array( $val ) ) {
                 $val = self::removeEmptyArrayItems( $val );
-                // does the result array contain anything?
                 if ( count( $val ) != 0 ) {
-                    // yes :-)
                     $narr[$key] = $val;
                 }
             } else {
@@ -601,7 +620,9 @@ class Citation {
             }
         }
         unset( $arr );
+
         return $narr;
+
     }
 
     /**
@@ -611,8 +632,9 @@ class Citation {
     */
     public static function setupCitationMeta( $post_id ) {
 
-            self::$CitationMeta = self::$CitationMeta ? self::$CitationMeta : get_post_meta( $post_id, 'citation', true );
+            self::$CitationMeta = get_post_meta( $post_id, 'citation', true );
             self::$CitationMeta = self::$CitationMeta ? self::removeEmptyArrayItems( self::$CitationMeta ) : array();
+
             return;
 
     }
@@ -639,6 +661,7 @@ class Citation {
             self::setupCitationMeta( $post_id );
 
             return self::$TemplateRenderer->renderView( $field_type, self::$CitationMeta );
+
     }
 
 }

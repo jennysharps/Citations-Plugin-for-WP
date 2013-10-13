@@ -23,13 +23,10 @@
  */
 ?>
 
-<br><br>
+<br><br>remove brs in <?php echo basename( __FILE__, '.php' ); ?>.php view<br><br>
 
 <?php
 $co_author = array_filter( $co_author );
-
-$author_count = count( $author ) + count( $co_author );
-echo '# of Authors: ' . $author_count . '<br><br>';
 
 if( is_array( $author[0] ) ) {
     $author_markup = $author[0]['last'] ? $author[0]['last'] : '';
@@ -44,11 +41,12 @@ if( is_array( $author[0] ) ) {
 <?php
 if( is_array( $co_author ) ) {
     foreach( $co_author as $key => $author_item ) {
-        $co_author_markup = isset( $author_item['last'] ) ? $author_item['last'] : '';
+        $co_author_markup =  count( $co_author ) + 1 != $key ? ' &' : '';
+        $co_author_markup .= isset( $author_item['last'] ) ? ' ' . $author_item['last'] : '';
         $co_author_markup .= isset( $author_item['last'] ) && ( isset( $author_item['first'] ) || isset( $author_item['middle'] ) ) ? ',' : '';
         $co_author_markup .= isset( $author_item['first'] ) ? ' ' . $author_item['first'][0] . '.' : '';
         $co_author_markup .= isset( $author_item['middle'] ) ? ' ' . $author_item['middle'][0] . '.' : '';
-        $co_author_markup .= $co_author_markup && count( $co_author ) != $key + 1 ? ', ' : '';
+        $co_author_markup .= $co_author_markup && count( $co_author ) != $key + 1 ? ',' : '';
 
         echo $co_author_markup;
     }
@@ -80,5 +78,4 @@ if( isset( $select_electronic_ref_type ) ) {
 }
 ?>
 
-
-<?php echo '<br />' . basename( __FILE__, '.php' ) . '<br /><br /><hr>';
+<br><br><hr><br><br>

@@ -3,7 +3,9 @@ class TemplateRenderer {
     public $path;
 
     public function __construct( $path ) {
+
         $this->path = $path;
+
     }
 
     public function renderView( $name, $vars ) {
@@ -13,7 +15,9 @@ class TemplateRenderer {
 
             ob_start();
             require( $this->path . "/{$name}.php" );
+
             return ob_get_clean();
+
     }
 
     public function renderInput( $type, $options ) {
@@ -40,6 +44,7 @@ class TemplateRenderer {
     }
 
     public function renderInputGroup( $options ) {
+
             $contents = '';
             $x = 0;
             foreach( $options['fields'] as $key => $field ) {
@@ -47,6 +52,8 @@ class TemplateRenderer {
                 $contents .= $this->renderInput( $field['type'], $field );
                 $x++;
             }
+
             return $contents;
+
     }
 }
