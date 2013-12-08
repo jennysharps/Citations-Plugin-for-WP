@@ -670,6 +670,8 @@ class Citation {
     public static function getCitation( $post_id ) {
 
             $field_type =  self::getFieldType( $post_id );
+                if( !$field_type ) return;
+                
             self::setupCitationMeta( $post_id );
 
             return self::$TemplateRenderer->renderView( $field_type, self::$CitationMeta );
