@@ -33,6 +33,7 @@ class Citation {
         add_action( 'init', array( __CLASS__, 'registerScripts' ) );
         add_action( 'admin_enqueue_scripts', array( __CLASS__, 'loadAdminScripts' ) );
         add_action( 'enqueue_scripts', array( __CLASS__, 'loadScripts' ) );
+        add_action( 'rest_api_init', array(__CLASS__, 'registerApiHooks' ) );
         add_action( 'wp_ajax_get_citation_fields', array( __CLASS__, 'ajaxSwitchFields' ) );
         add_action( 'wp_ajax_get_repeater_field', array( __CLASS__, 'ajaxRepeatField' ) );
 
@@ -73,7 +74,9 @@ class Citation {
             'hierarchical' => false,
             'menu_position' => 8,
             'register_meta_box_cb' => array( __CLASS__, 'addMetaBoxes' ),
-            'supports' => array( 'title', 'thumbnail', 'excerpt', 'sticky' )
+            'supports' => array( 'title', 'thumbnail', 'excerpt', 'sticky' ),
+            'show_in_rest' => true,
+            'rest_base' => 'citations'
           );
 
           register_post_type( self::$postTypeName, $args );
@@ -431,6 +434,29 @@ class Citation {
 
             return $author_markup;
 
+    }
+
+    /**
+    * Add citation data to rest API
+    * @mvc Controller
+    * @author Jenny Sharps <jsharps85@gmail.com>
+    */
+    public static function registerApiHooks() {
+        register_rest_field(
+            self::$postTypeName,
+            'citation',
+            array(
+                'get_callback' => function($post) {
+                    $field_type =  self::getFieldType( $post['id'] );
+                    if( !$field_type ) return;
+                    self::setupCitationMeta( $post['id'] );
+                    $citation_meta = self::$CitationMeta;
+                    $citation_meta['rendered'] = self::getCitation( $post['id'] );
+
+                    return $citation_meta;
+                },
+            )
+        );
     }
 
     /**
